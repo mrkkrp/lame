@@ -122,10 +122,14 @@ lameClose = c_lame_close
 foreign import ccall unsafe "lame_close"
   c_lame_close :: Lame -> IO ()
 
--- |
+-- | Set more internal configuration based on previously set parameters.
+-- Should be called when all the other stuff is set.
 
 initParams :: Lame -> IO ()
-initParams = undefined -- TODO
+initParams = handleErrors . c_lame_init_params
+
+foreign import ccall unsafe "lame_init_params"
+  c_lame_init_params :: Lame -> IO Int
 
 ----------------------------------------------------------------------------
 -- Input stream description
@@ -140,31 +144,53 @@ foreign import ccall unsafe "lame_set_num_samples"
 
 -- | Set sample rate of the input stream.
 
-setInputSampleRate :: Lame -> Word -> IO ()
+setInputSampleRate :: Lame -> Int -> IO ()
 setInputSampleRate l x = handleErrors (c_lame_set_input_samplerate l x)
 
 foreign import ccall unsafe "lame_set_input_samplerate"
-  c_lame_set_input_samplerate :: Lame -> Word -> IO Int
+  c_lame_set_input_samplerate :: Lame -> Int -> IO Int
 
 -- | Set number of channels in input stream.
 
-setNumChannels :: Lame -> Word -> IO ()
+setNumChannels :: Lame -> Int -> IO ()
 setNumChannels l x = handleErrors (c_lame_set_num_channels l x)
 
 foreign import ccall unsafe "lame_set_num_channels"
-  c_lame_set_num_channels :: Lame -> Word -> IO Int
+  c_lame_set_num_channels :: Lame -> Int -> IO Int
+
+-- | Scale the input by this amount before encoding.
+
+setScale :: Lame -> Float -> IO ()
+setScale l x = handleErrors (c_lame_set_scale l x)
+
+foreign import ccall unsafe "lame_set_scale"
+  c_lame_set_scale :: Lame -> Float -> IO Int
 
 -- | Set output sample rate in Hz. 0 (default) means that LAME will pick
 -- this value automatically.
 
-setOutputSampleRate :: Lame -> Word -> IO ()
+setOutputSampleRate :: Lame -> Int -> IO ()
 setOutputSampleRate l x = handleErrors (c_lame_set_out_samplerate l x)
 
 foreign import ccall unsafe "lame_set_out_samplerate"
-  c_lame_set_out_samplerate :: Lame -> Word -> IO Int
+  c_lame_set_out_samplerate :: Lame -> Int -> IO Int
 
 ----------------------------------------------------------------------------
 -- General control parameters
+
+-- | Select algorithm. This variable will effect quality by selecting
+-- expensive or cheap algorithms. 0 gives the best quality (very slow). 9 is
+-- very fast, but gives worst quality. worst compression.
+--
+--     * 2 — near-best quality, not too slow.
+--     * 5 — good quality, fast.
+--     * 7 — OK quality, really fast.
+
+setQuality :: Lame -> Int -> IO ()
+setQuality l x = handleErrors (c_lame_set_quality l x)
+
+foreign import ccall unsafe "lame_set_quality"
+  c_lame_set_quality :: Lame -> Int -> IO Int
 
 ----------------------------------------------------------------------------
 -- Frame parameters
