@@ -40,9 +40,9 @@ maintainer:           Mark Karpov <markkarpov@openmailbox.org>
 homepage:             https://github.com/mrkkrp/lame
 bug-reports:          https://github.com/mrkkrp/lame/issues
 category:             Codec, Audio
-synopsis:             Complete high-level binding to LAME
+synopsis:             Complete high-level binding to LAME encoder
 build-type:           Simple
-description:          Complete high-level binding to LAME.
+description:          Complete high-level binding to LAME encoder.
 extra-doc-files:      CHANGELOG.md
                     , README.md
 
@@ -57,13 +57,13 @@ flag dev
 
 library
   build-depends:      base             >= 4.8   && < 5.0
+                    , exceptions       >= 0.6   && < 0.9
                     , wave             >= 0.1.2 && < 0.2
   -- if !impl(ghc >= 8.0)
   --   build-depends:    semigroups       == 0.18.*
   extra-libraries:    mp3lame
-  exposed-modules:    Codec.Audio.LAME.Decoder
-                    , Codec.Audio.LAME.Encoder
-                    , Codec.Audio.LAME.Metadata
+  exposed-modules:    Codec.Audio.LAME.Encoder
+  other-modules:      Codec.Audio.LAME.Internal
   -- c-sources:          cbits/
   include-dirs:       cbits
   if flag(dev)
