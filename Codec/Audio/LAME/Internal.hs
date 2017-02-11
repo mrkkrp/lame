@@ -16,7 +16,54 @@ module Codec.Audio.LAME.Internal
     Lame
   , LameException (..)
     -- * Low-level API
-  , withLame )
+  , withLame
+  , initParams
+    -- ** Input stream description
+  , setNumSamples
+  , setInputSampleRate
+  , setNumChannels
+  , setScale
+  , setOutputSampleRate
+    -- ** General control parameters
+  , setQuality
+  , setFreeFormat
+  , setFindReplayGain
+  , setNoGapTotal
+  , setNoGapCurrentIndex
+  , setBitrate
+  , setCompressionRatio
+    -- ** Frame parameters
+  , setCopyright
+  , setOriginal
+  , setErrorProtection
+  , setStrictISO
+    -- ** VBR control
+  , setVbr
+  , setVbrQ
+  , setVbrMeanBitrate
+  , setVbrMinBitrate
+  , setVbrMaxBitrate
+  , setVBRHardMin
+    -- ** Filtering control
+  , setLowpassFreq
+  , setLowpassWidth
+  , setHighpassFreq
+  , setHighpassWidth
+    -- ** Psycho-acoustics
+  , setAthOnly
+  , setAthShort
+  , setNoAth
+  , setAthType
+  , setAthLower
+  , setAthAAType
+  , setAthAASensitivity
+  , setAllowDiffShort
+  , setUseTemporal
+  , setInterChRatio
+  , setNoShortBlocks
+  , setForceShortBlocks
+    -- * Encoding
+  , encodingHelper )
 where
 
 import Control.Monad.Catch
@@ -75,6 +122,65 @@ lameClose = c_lame_close
 foreign import ccall unsafe "lame_close"
   c_lame_close :: Lame -> IO ()
 
+-- |
+
+initParams :: Lame -> IO ()
+initParams = undefined -- TODO
+
+----------------------------------------------------------------------------
+-- Input stream description
+
+-- | Set total number of samples to encode.
+
+setNumSamples :: Lame -> Word64 -> IO ()
+setNumSamples l x = handleErrors (c_lame_set_num_samples l x)
+
+foreign import ccall unsafe "lame_set_num_samples"
+  c_lame_set_num_samples :: Lame -> Word64 -> IO Int
+
+-- | Set sample rate of the input stream.
+
+setInputSampleRate :: Lame -> Word -> IO ()
+setInputSampleRate l x = handleErrors (c_lame_set_input_samplerate l x)
+
+foreign import ccall unsafe "lame_set_input_samplerate"
+  c_lame_set_input_samplerate :: Lame -> Word -> IO Int
+
+-- | Set number of channels in input stream.
+
+setNumChannels :: Lame -> Word -> IO ()
+setNumChannels l x = handleErrors (c_lame_set_num_channels l x)
+
+foreign import ccall unsafe "lame_set_num_channels"
+  c_lame_set_num_channels :: Lame -> Word -> IO Int
+
+-- | Set output sample rate in Hz. 0 (default) means that LAME will pick
+-- this value automatically.
+
+setOutputSampleRate :: Lame -> Word -> IO ()
+setOutputSampleRate l x = handleErrors (c_lame_set_out_samplerate l x)
+
+foreign import ccall unsafe "lame_set_out_samplerate"
+  c_lame_set_out_samplerate :: Lame -> Word -> IO Int
+
+----------------------------------------------------------------------------
+-- General control parameters
+
+----------------------------------------------------------------------------
+-- Frame parameters
+
+----------------------------------------------------------------------------
+-- VBR control
+
+----------------------------------------------------------------------------
+-- Filtering control
+
+----------------------------------------------------------------------------
+-- Psycho-acoustics
+
+----------------------------------------------------------------------------
+-- Encoding
+
 ----------------------------------------------------------------------------
 -- Helpers
 
@@ -86,3 +192,23 @@ maybePtr :: a -> Maybe a
 maybePtr a
   | unsafeCoerce a == nullPtr = Nothing
   | otherwise                 = Just a
+
+-- | Treat the 'Int' value as a error code. Unless it's 0, throw
+-- corresponding 'LameException', otherwise just return the unit.
+
+handleErrors :: IO Int -> IO ()
+handleErrors m = do
+  n <- m
+  case n of
+    0   -> return ()
+    -10 -> throwM LameNoMemory
+    -11 -> throwM LameBadBitrate
+    -12 -> throwM LameBadSampleFreq
+    -13 -> throwM LameInternalError
+    _   -> throwM LameGenericError
+
+-- | Convert 'Bool' into 'Int'.
+
+fromBool :: Bool -> Int
+fromBool False = 0
+fromBool True  = 1
