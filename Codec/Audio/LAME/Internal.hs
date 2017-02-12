@@ -25,6 +25,7 @@ module Codec.Audio.LAME.Internal
   , setScale
   , setOutputSampleRate
     -- ** General control parameters
+  , setWriteVbrTag
   , setQuality
   , setFreeFormat
   , setFindReplayGain
@@ -37,12 +38,17 @@ module Codec.Audio.LAME.Internal
   , setOriginal
   , setErrorProtection
   , setStrictISO
+    -- ** Quantization\/noise shaping
+  , setQuantComp
+  , setQuantCompShort
+  , setExpNspsytune
+  , setMsfix
     -- ** VBR control
-  , setVbr
-  , setVbrQ
-  , setVbrMeanBitrate
-  , setVbrMinBitrate
-  , setVbrMaxBitrate
+  , setVBR
+  , setVBRQ
+  , setVBRMeanBitrate
+  , setVBRMinBitrate
+  , setVBRMaxBitrate
   , setVBRHardMin
     -- ** Filtering control
   , setLowpassFreq
@@ -178,6 +184,14 @@ foreign import ccall unsafe "lame_set_out_samplerate"
 ----------------------------------------------------------------------------
 -- General control parameters
 
+-- | Set whether to write VBR header frame.
+
+setWriteVbrTag :: Lame -> Bool -> IO ()
+setWriteVbrTag l x = handleErrors (c_lame_set_bWriteVbrTag l (fromBool x))
+
+foreign import ccall unsafe "lame_set_bWriteVbrTag"
+  c_lame_set_bWriteVbrTag :: Lame -> Int -> IO Int
+
 -- | Select algorithm. This variable will effect quality by selecting
 -- expensive or cheap algorithms. 0 gives the best quality (very slow). 9 is
 -- very fast, but gives worst quality. worst compression.
@@ -192,8 +206,92 @@ setQuality l x = handleErrors (c_lame_set_quality l x)
 foreign import ccall unsafe "lame_set_quality"
   c_lame_set_quality :: Lame -> Int -> IO Int
 
+-- | Set whether we should use free format.
+
+setFreeFormat :: Lame -> Bool -> IO ()
+setFreeFormat l x = handleErrors (c_lame_set_free_format l (fromBool x))
+
+foreign import ccall unsafe "lame_set_free_format"
+  c_lame_set_free_format :: Lame -> Int -> IO Int
+
+-- | Set whether we should do ReplayGain analysis.
+
+setFindReplayGain :: Lame -> Bool -> IO ()
+setFindReplayGain l x = handleErrors (c_lame_set_findReplayGain l (fromBool x))
+
+foreign import ccall unsafe "lame_set_findReplayGain"
+  c_lame_set_findReplayGain :: Lame -> Int -> IO Int
+
+-- | Set total number of tracks to encode in “no gap” mode.
+
+setNoGapTotal :: Lame -> Int -> IO ()
+setNoGapTotal l x = handleErrors (c_lame_set_nogap_total l x)
+
+foreign import ccall unsafe "lame_set_nogap_total"
+  c_lame_set_nogap_total :: Lame -> Int -> IO Int
+
+-- | Set index of current track to encode in “no gap” mode.
+
+setNoGapCurrentIndex :: Lame -> Int -> IO ()
+setNoGapCurrentIndex l x = handleErrors (c_lame_set_nogap_currentindex l x)
+
+foreign import ccall unsafe "lame_set_nogap_currentindex"
+  c_lame_set_nogap_currentindex :: Lame -> Int -> IO Int
+
+-- | Set bitrate.
+
+setBitrate :: Lame -> Int -> IO ()
+setBitrate l x = handleErrors (c_lame_set_brate l x)
+
+foreign import ccall unsafe "lame_set_brate"
+  c_lame_set_brate :: Lame -> Int -> IO Int
+
+-- | Set compression ratio.
+
+setCompressionRatio :: Lame -> Int -> IO ()
+setCompressionRatio l x = handleErrors (c_lame_set_compression_ratio l x)
+
+foreign import ccall unsafe "lame_set_compression_ratio"
+  c_lame_set_compression_ratio :: Lame -> Int -> IO Int
+
 ----------------------------------------------------------------------------
 -- Frame parameters
+
+-- | Mark as copyright protected.
+
+setCopyright :: Lame -> Bool -> IO ()
+setCopyright l x = handleErrors (c_lame_set_copyright l (fromBool x))
+
+foreign import ccall unsafe "lame_set_copyright"
+  c_lame_set_copyright :: Lame -> Int -> IO Int
+
+-- | Mark as original.
+
+setOriginal :: Lame -> Bool -> IO ()
+setOriginal l x = handleErrors (c_lame_set_original l (fromBool x))
+
+foreign import ccall unsafe "lame_set_original"
+  c_lame_set_original :: Lame -> Int -> IO Int
+
+-- | Set whether to use 2 bytes from each frame for CRC checksum.
+
+setErrorProtection :: Lame -> Bool -> IO ()
+setErrorProtection l x =
+  handleErrors (c_lame_set_error_protection l (fromBool x))
+
+foreign import ccall unsafe "lame_set_error_protection"
+  c_lame_set_error_protection :: Lame -> Int -> IO Int
+
+-- | Enforce strict ISO compliance.
+
+setStrictISO :: Lame -> Bool -> IO ()
+setStrictISO l x = handleErrors (c_lame_set_strict_ISO l (fromBool x))
+
+foreign import ccall unsafe "lame_set_strict_ISO"
+  c_lame_set_strict_ISO :: Lame -> Int -> IO Int
+
+----------------------------------------------------------------------------
+-- Quantization/noize shaping
 
 ----------------------------------------------------------------------------
 -- VBR control
@@ -232,9 +330,3 @@ handleErrors m = do
     -12 -> throwM LameBadSampleFreq
     -13 -> throwM LameInternalError
     _   -> throwM LameGenericError
-
--- | Convert 'Bool' into 'Int'.
-
-fromBool :: Bool -> Int
-fromBool False = 0
-fromBool True  = 1
