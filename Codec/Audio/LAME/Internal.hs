@@ -14,6 +14,7 @@
 module Codec.Audio.LAME.Internal
   ( -- * Types
     Lame
+  , VbrMode (..)
   , LameException (..)
     -- * Low-level API
   , withLame
@@ -39,10 +40,10 @@ module Codec.Audio.LAME.Internal
   , setErrorProtection
   , setStrictISO
     -- ** Quantization\/noise shaping
-  , setQuantComp
-  , setQuantCompShort
-  , setExpNspsytune
-  , setMsfix
+  -- , setQuantComp
+  -- , setQuantCompShort
+  -- , setExpNspsytune
+  -- , setMsfix
     -- ** VBR control
   , setVBR
   , setVBRQ
@@ -51,23 +52,23 @@ module Codec.Audio.LAME.Internal
   , setVBRMaxBitrate
   , setVBRHardMin
     -- ** Filtering control
-  , setLowpassFreq
-  , setLowpassWidth
-  , setHighpassFreq
-  , setHighpassWidth
+  -- , setLowpassFreq
+  -- , setLowpassWidth
+  -- , setHighpassFreq
+  -- , setHighpassWidth
     -- ** Psycho-acoustics
-  , setAthOnly
-  , setAthShort
-  , setNoAth
-  , setAthType
-  , setAthLower
-  , setAthAAType
-  , setAthAASensitivity
-  , setAllowDiffShort
-  , setUseTemporal
-  , setInterChRatio
-  , setNoShortBlocks
-  , setForceShortBlocks
+  -- , setAthOnly
+  -- , setAthShort
+  -- , setNoAth
+  -- , setAthType
+  -- , setAthLower
+  -- , setAthAAType
+  -- , setAthAASensitivity
+  -- , setAllowDiffShort
+  -- , setUseTemporal
+  -- , setInterChRatio
+  -- , setNoShortBlocks
+  -- , setForceShortBlocks
     -- * Encoding
   , encodingHelper )
 where
@@ -84,6 +85,14 @@ import Unsafe.Coerce
 -- pointer to the structure that does all the bookkeeping in LAME.
 
 newtype Lame = Lame (Ptr Void)
+
+-- | Enumeration of VBR modes.
+
+data VbrMode
+  = VbrRh              -- | VBR RH
+  | VbrAbr             -- | VBR ABR
+  | VbrMtrh            -- | VBR MTRH
+  deriving (Show, Read, Eq, Ord, Bounded, Enum)
 
 -- | Enumeration of problems you can have with LAME.
 
@@ -296,6 +305,60 @@ foreign import ccall unsafe "lame_set_strict_ISO"
 ----------------------------------------------------------------------------
 -- VBR control
 
+-- | Set type of VBR.
+
+setVBR :: Lame -> VbrMode -> IO ()
+setVBR l x' = handleErrors (c_lame_set_VBR l x)
+  where
+    x = case x' of
+          VbrRh   -> 2
+          VbrAbr  -> 3
+          VbrMtrh -> 4
+
+foreign import ccall unsafe "lame_set_VBR"
+  c_lame_set_VBR :: Lame -> Int -> IO Int
+
+-- | Set VBR quality level, 0 is highest, 9 is lowest.
+
+setVBRQ :: Lame -> Int -> IO ()
+setVBRQ l x = handleErrors (c_lame_set_VBR_q l x)
+
+foreign import ccall unsafe "lame_set_VBR_q"
+  c_lame_set_VBR_q :: Lame -> Int -> IO Int
+
+-- | Only for VBR ABR: set mean bitrate in kbps.
+
+setVBRMeanBitrate :: Lame -> Int -> IO ()
+setVBRMeanBitrate l x = handleErrors (c_lame_set_VBR_mean_bitrate_kbps l x)
+
+foreign import ccall unsafe "lame_set_VBR_mean_bitrate_bkps"
+  c_lame_set_VBR_mean_bitrate_kbps :: Lame -> Int -> IO Int
+
+-- | Only for VBR ABR: set min bitrate in kbps.
+
+setVBRMinBitrate :: Lame -> Int -> IO ()
+setVBRMinBitrate l x = handleErrors (c_lame_set_VBR_min_bitrate_kbps l x)
+
+foreign import ccall unsafe "lame_set_VBR_min_bitrate_kbps"
+  c_lame_set_VBR_min_bitrate_kbps :: Lame -> Int -> IO Int
+
+-- | Only for VBR ABR: set max bitrate in kbps.
+
+setVBRMaxBitrate :: Lame -> Int -> IO ()
+setVBRMaxBitrate l x = handleErrors (c_lame_set_VBR_max_bitrate_kbps l x)
+
+foreign import ccall unsafe "lame_set_VBR_max_bitrate_kbps"
+  c_lame_set_VBR_max_bitrate_kbps :: Lame -> Int -> IO Int
+
+-- | Set whether to strictly enforce VBR min bitrate. Normally it will be
+-- violated for analog silence.
+
+setVBRHardMin :: Lame -> Bool -> IO ()
+setVBRHardMin l x = handleErrors (c_lame_set_VBR_hard_min l (fromBool x))
+
+foreign import ccall unsafe "lame_set_VBR_hard_min"
+  c_lame_set_VBR_hard_min :: Lame -> Int -> IO Int
+
 ----------------------------------------------------------------------------
 -- Filtering control
 
@@ -304,6 +367,16 @@ foreign import ccall unsafe "lame_set_strict_ISO"
 
 ----------------------------------------------------------------------------
 -- Encoding
+
+-- | Encode given input file.
+
+encodingHelper
+  :: Lame              -- ^ The settings
+  -> Word64            -- ^ Offset of data chunk
+  -> Word64            -- ^ Size of data chunk
+  -> FilePath          -- ^ Location of input file (normalized)
+  -> IO ()
+encodingHelper = undefined -- TODO
 
 ----------------------------------------------------------------------------
 -- Helpers

@@ -57,12 +57,14 @@ flag dev
 
 library
   build-depends:      base             >= 4.8   && < 5.0
+                    , data-default-class
+                    , directory        >= 1.2.2 && < 1.4
                     , exceptions       >= 0.6   && < 0.9
                     , wave             >= 0.1.2 && < 0.2
   -- if !impl(ghc >= 8.0)
   --   build-depends:    semigroups       == 0.18.*
   extra-libraries:    mp3lame
-  exposed-modules:    Codec.Audio.LAME.Encoder
+  exposed-modules:    Codec.Audio.LAME
   other-modules:      Codec.Audio.LAME.Internal
   -- c-sources:          cbits/
   include-dirs:       cbits
