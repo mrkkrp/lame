@@ -60,6 +60,8 @@ library
                     , data-default-class
                     , directory        >= 1.2.2 && < 1.4
                     , exceptions       >= 0.6   && < 0.9
+                    , filepath         >= 1.2   && < 1.5
+                    , transformers     >= 0.4   && < 0.6
                     , wave             >= 0.1.2 && < 0.2
   -- if !impl(ghc >= 8.0)
   --   build-depends:    semigroups       == 0.18.*

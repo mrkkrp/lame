@@ -26,14 +26,14 @@ module Codec.Audio.LAME.Internal
   , setScale
   , setOutputSampleRate
     -- ** General control parameters
-  , setWriteVbrTag
-  , setQuality
+  , setWriteVbrTag -- pending
+  , setQuality     -- pending
   , setFreeFormat
   , setFindReplayGain
   , setNoGapTotal
   , setNoGapCurrentIndex
-  , setBitrate
-  , setCompressionRatio
+  , setBitrate     -- pending
+  , setCompressionRatio -- pending
     -- ** Frame parameters
   , setCopyright
   , setOriginal
@@ -45,12 +45,12 @@ module Codec.Audio.LAME.Internal
   -- , setExpNspsytune
   -- , setMsfix
     -- ** VBR control
-  , setVBR
-  , setVBRQ
-  , setVBRMeanBitrate
-  , setVBRMinBitrate
-  , setVBRMaxBitrate
-  , setVBRHardMin
+  , setVBR -- pending
+  , setVBRQ -- pending
+  , setVBRMeanBitrate -- pending
+  , setVBRMinBitrate -- pending
+  , setVBRMaxBitrate -- pending
+  , setVBRHardMin -- pending
     -- ** Filtering control
   -- , setLowpassFreq
   -- , setLowpassWidth
@@ -76,6 +76,7 @@ where
 import Control.Monad.Catch
 import Data.Void
 import Foreign
+import Foreign.C.String
 import Unsafe.Coerce
 
 ----------------------------------------------------------------------------
@@ -89,9 +90,9 @@ newtype Lame = Lame (Ptr Void)
 -- | Enumeration of VBR modes.
 
 data VbrMode
-  = VbrRh              -- | VBR RH
-  | VbrAbr             -- | VBR ABR
-  | VbrMtrh            -- | VBR MTRH
+  = VbrRh              -- ^ VBR RH
+  | VbrAbr             -- ^ VBR ABR
+  | VbrMtrh            -- ^ VBR MTRH
   deriving (Show, Read, Eq, Ord, Bounded, Enum)
 
 -- | Enumeration of problems you can have with LAME.
@@ -375,8 +376,21 @@ encodingHelper
   -> Word64            -- ^ Offset of data chunk
   -> Word64            -- ^ Size of data chunk
   -> FilePath          -- ^ Location of input file (normalized)
+  -> FilePath          -- ^ Location of output file (normalized)
   -> IO ()
-encodingHelper = undefined -- TODO
+encodingHelper l dataOffset dataSize ipath opath =
+  withCString ipath $ \ipathPtr ->
+    withCString opath $ \opathPtr ->
+      c_lame_encoding_helper
+        l              -- lame settings stucture
+        dataOffset     -- offset of data chunk
+        dataSize       -- size of data chunk
+        ipathPtr       -- path to input file
+        opathPtr       -- path to output file
+
+foreign import ccall unsafe "lame_encoding_helper"
+  c_lame_encoding_helper
+    :: Lame -> Word64 -> Word64 -> CString -> CString -> IO ()
 
 ----------------------------------------------------------------------------
 -- Helpers
