@@ -26,14 +26,14 @@ module Codec.Audio.LAME.Internal
   , setScale
   , setOutputSampleRate
     -- ** General control parameters
-  , setWriteVbrTag -- pending
-  , setQuality     -- pending
+  , setWriteVbrTag
+  , setQuality
   , setFreeFormat
   , setFindReplayGain
   , setNoGapTotal
   , setNoGapCurrentIndex
-  , setBitrate     -- pending
-  , setCompressionRatio -- pending
+  , setBitrate
+  , setCompressionRatio
     -- ** Frame parameters
   , setCopyright
   , setOriginal
@@ -45,12 +45,12 @@ module Codec.Audio.LAME.Internal
   -- , setExpNspsytune
   -- , setMsfix
     -- ** VBR control
-  , setVBR -- pending
-  , setVBRQ -- pending
-  , setVBRMeanBitrate -- pending
-  , setVBRMinBitrate -- pending
-  , setVBRMaxBitrate -- pending
-  , setVBRHardMin -- pending
+  , setVBR
+  , setVBRQ
+  , setVBRMinBitrate
+  , setVBRMeanBitrate
+  , setVBRMaxBitrate
+  , setVBRHardMin
     -- ** Filtering control
   -- , setLowpassFreq
   -- , setLowpassWidth
@@ -194,7 +194,7 @@ foreign import ccall unsafe "lame_set_out_samplerate"
 ----------------------------------------------------------------------------
 -- General control parameters
 
--- | Set whether to write VBR header frame.
+-- | Set whether to write Xing VBR header frame.
 
 setWriteVbrTag :: Lame -> Bool -> IO ()
 setWriteVbrTag l x = handleErrors (c_lame_set_bWriteVbrTag l (fromBool x))
@@ -204,7 +204,7 @@ foreign import ccall unsafe "lame_set_bWriteVbrTag"
 
 -- | Select algorithm. This variable will effect quality by selecting
 -- expensive or cheap algorithms. 0 gives the best quality (very slow). 9 is
--- very fast, but gives worst quality. worst compression.
+-- very fast, but gives worst quality.
 --
 --     * 2 — near-best quality, not too slow.
 --     * 5 — good quality, fast.
@@ -327,14 +327,6 @@ setVBRQ l x = handleErrors (c_lame_set_VBR_q l x)
 foreign import ccall unsafe "lame_set_VBR_q"
   c_lame_set_VBR_q :: Lame -> Int -> IO Int
 
--- | Only for VBR ABR: set mean bitrate in kbps.
-
-setVBRMeanBitrate :: Lame -> Int -> IO ()
-setVBRMeanBitrate l x = handleErrors (c_lame_set_VBR_mean_bitrate_kbps l x)
-
-foreign import ccall unsafe "lame_set_VBR_mean_bitrate_bkps"
-  c_lame_set_VBR_mean_bitrate_kbps :: Lame -> Int -> IO Int
-
 -- | Only for VBR ABR: set min bitrate in kbps.
 
 setVBRMinBitrate :: Lame -> Int -> IO ()
@@ -342,6 +334,14 @@ setVBRMinBitrate l x = handleErrors (c_lame_set_VBR_min_bitrate_kbps l x)
 
 foreign import ccall unsafe "lame_set_VBR_min_bitrate_kbps"
   c_lame_set_VBR_min_bitrate_kbps :: Lame -> Int -> IO Int
+
+-- | Only for VBR ABR: set mean bitrate in kbps.
+
+setVBRMeanBitrate :: Lame -> Int -> IO ()
+setVBRMeanBitrate l x = handleErrors (c_lame_set_VBR_mean_bitrate_kbps l x)
+
+foreign import ccall unsafe "lame_set_VBR_mean_bitrate_bkps"
+  c_lame_set_VBR_mean_bitrate_kbps :: Lame -> Int -> IO Int
 
 -- | Only for VBR ABR: set max bitrate in kbps.
 
