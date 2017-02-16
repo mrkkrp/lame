@@ -43,6 +43,7 @@ category:             Codec, Audio
 synopsis:             Complete high-level binding to LAME encoder
 build-type:           Simple
 description:          Complete high-level binding to LAME encoder.
+extra-source-files:   cbits/*.h
 extra-doc-files:      CHANGELOG.md
                     , README.md
 
@@ -63,12 +64,10 @@ library
                     , filepath         >= 1.2   && < 1.5
                     , transformers     >= 0.4   && < 0.6
                     , wave             >= 0.1.2 && < 0.2
-  -- if !impl(ghc >= 8.0)
-  --   build-depends:    semigroups       == 0.18.*
   extra-libraries:    mp3lame
   exposed-modules:    Codec.Audio.LAME
   other-modules:      Codec.Audio.LAME.Internal
-  -- c-sources:          cbits/
+  c-sources:          cbits/helpers.c
   include-dirs:       cbits
   if flag(dev)
     ghc-options:      -Wall -Werror
@@ -83,8 +82,6 @@ test-suite tests
   build-depends:      base             >= 4.8   && < 5.0
                     , hspec            >= 2.0   && < 3.0
                     , lame             >= 0.1.0
-  -- if !impl(ghc >= 8.0)
-  --   build-depends:    semigroups       == 0.18.*
   if flag(dev)
     ghc-options:      -Wall -Werror
   else
