@@ -161,10 +161,10 @@ foreign import ccall unsafe "lame_set_num_samples"
 -- | Set sample rate of the input stream.
 
 setInputSampleRate :: Lame -> Int -> IO ()
-setInputSampleRate l x = handleErrors (c_lame_set_input_samplerate l x)
+setInputSampleRate l x = handleErrors (c_lame_set_in_samplerate l x)
 
-foreign import ccall unsafe "lame_set_input_samplerate"
-  c_lame_set_input_samplerate :: Lame -> Int -> IO Int
+foreign import ccall unsafe "lame_set_in_samplerate"
+  c_lame_set_in_samplerate :: Lame -> Int -> IO Int
 
 -- | Set number of channels in input stream.
 
@@ -340,7 +340,7 @@ foreign import ccall unsafe "lame_set_VBR_min_bitrate_kbps"
 setVBRMeanBitrate :: Lame -> Int -> IO ()
 setVBRMeanBitrate l x = handleErrors (c_lame_set_VBR_mean_bitrate_kbps l x)
 
-foreign import ccall unsafe "lame_set_VBR_mean_bitrate_bkps"
+foreign import ccall unsafe "lame_set_VBR_mean_bitrate_kbps"
   c_lame_set_VBR_mean_bitrate_kbps :: Lame -> Int -> IO Int
 
 -- | Only for VBR ABR: set max bitrate in kbps.
