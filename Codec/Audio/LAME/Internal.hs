@@ -69,15 +69,29 @@ module Codec.Audio.LAME.Internal
   -- , setInterChRatio
   -- , setNoShortBlocks
   -- , setForceShortBlocks
+    -- * Tags
+  , id3TagInit
+  , id3TagAddV2
+  , id3TagV1Only
+  , id3TagV2Only
+  , id3TagSetTitle
+  , id3TagSetArtist
+  , id3TagSetAlbum
+  , id3TagSetYear
+  , id3TagSetComment
     -- * Encoding
   , encodingHelper )
 where
 
 import Control.Monad.Catch
+import Data.Text (Text)
 import Data.Void
 import Foreign
 import Foreign.C.String
 import Unsafe.Coerce
+import qualified Data.ByteString    as B
+import qualified Data.Text          as T
+import qualified Data.Text.Encoding as T
 
 ----------------------------------------------------------------------------
 -- Types
@@ -367,6 +381,82 @@ foreign import ccall unsafe "lame_set_VBR_hard_min"
 -- Psycho-acoustics
 
 ----------------------------------------------------------------------------
+-- Tags
+
+-- | Initialize something about tag editing library. The docs are silent
+-- what this does, but I guess we'll take it into the business.
+
+id3TagInit :: Lame -> IO ()
+id3TagInit = c_id3tag_init
+
+foreign import ccall unsafe "id3tag_init"
+  c_id3tag_init :: Lame -> IO ()
+
+-- | Force addition of version 2 tag.
+
+id3TagAddV2 :: Lame -> IO ()
+id3TagAddV2 = c_id3tag_add_v2
+
+foreign import ccall unsafe "id3tag_add_v2"
+  c_id3tag_add_v2 :: Lame -> IO ()
+
+-- | Add only a version 1 tag.
+
+id3TagV1Only :: Lame -> IO ()
+id3TagV1Only = c_id3tag_v1_only
+
+foreign import ccall unsafe "id3tag_v1_only"
+  c_id3tag_v1_only :: Lame -> IO ()
+
+-- | Add only a version 2 tag.
+
+id3TagV2Only :: Lame -> IO ()
+id3TagV2Only = c_id3tag_v2_only
+
+foreign import ccall unsafe "id3tag_v2_only"
+  c_id3tag_v2_only :: Lame -> IO ()
+
+-- | Set track's “title” tag.
+
+id3TagSetTitle :: Lame -> Text -> IO ()
+id3TagSetTitle l x = withCStringText x (c_id3tag_set_track l)
+
+foreign import ccall unsafe "id3tag_set_track"
+  c_id3tag_set_track :: Lame -> CString -> IO ()
+
+-- | Set track's “artist” tag.
+
+id3TagSetArtist :: Lame -> Text -> IO ()
+id3TagSetArtist l x = withCStringText x (c_id3tag_set_artist l)
+
+foreign import ccall unsafe "id3tag_set_artist"
+  c_id3tag_set_artist :: Lame -> CString -> IO ()
+
+-- | Set track's “album” tag.
+
+id3TagSetAlbum :: Lame -> Text -> IO ()
+id3TagSetAlbum l x = withCStringText x (c_id3tag_set_album l)
+
+foreign import ccall unsafe "id3tag_set_album"
+  c_id3tag_set_album :: Lame -> CString -> IO ()
+
+-- | Set track's “year” tag.
+
+id3TagSetYear :: Lame -> Text -> IO ()
+id3TagSetYear l x = withCStringText x (c_id3tag_set_year l)
+
+foreign import ccall unsafe "id3tag_set_year"
+  c_id3tag_set_year :: Lame -> CString -> IO ()
+
+-- | Set track's “comment” tag.
+
+id3TagSetComment :: Lame -> Text -> IO ()
+id3TagSetComment l x = withCStringText x (c_id3tag_set_comment l)
+
+foreign import ccall unsafe "id3tag_set_comment"
+  c_id3tag_set_comment :: Lame -> CString -> IO ()
+
+----------------------------------------------------------------------------
 -- Encoding
 
 -- | Encode given input file.
@@ -417,3 +507,10 @@ handleErrors m = do
     -12 -> throwM LameBadSampleFreq
     -13 -> throwM LameInternalError
     _   -> throwM LameGenericError
+
+-- | Convert a 'Text' value to null-terminated C string that will be freed
+-- automatically. Null bytes are removed from the 'Text' value first.
+
+withCStringText :: Text -> (CString -> IO a) -> IO a
+withCStringText text = B.useAsCString bytes
+  where bytes = T.encodeUtf8 (T.filter (/= '\0') text)
