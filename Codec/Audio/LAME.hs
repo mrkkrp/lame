@@ -36,7 +36,7 @@ import qualified Codec.Audio.LAME.Internal as I
 data EncoderSettings = EncoderSettings
   { encoderCompression :: !Compression
     -- ^ How to determine amount of compression to apply, see 'Compression'.
-    -- Default value: @'CompressionRatio' 11@.
+    -- Default value: @'CompressionRatio' 11@ (corresponds to 128 kbps).
   , encoderQuality :: !(Maybe Word)
     -- ^ Select algorithm. This variable will effect quality by selecting
     -- expensive or cheap algorithms. 0 gives the best quality (very slow). 9 is
@@ -83,7 +83,7 @@ data Compression
   = CompressionBitrate Word
     -- ^ Specify compression by setting a fixed bitrate, e.g.
     -- @'CompressionBitrate' 320@.
-  | CompressionRatio Word
+  | CompressionRatio Float
     -- ^ Specify compression ratio.
   | CompressionVBR VbrMode Word
     -- ^ VBR. Here you can specify which mode to use and the second argument
@@ -155,8 +155,10 @@ encodeMp3 EncoderSettings {..} ipath' opath' = liftIO . I.withLame $ \l -> do
   I.setWriteVbrTag l encoderWriteVbrTag
   forM_ encoderQuality (I.setQuality l . fromIntegral . min 9)
   case encoderCompression of
-    CompressionBitrate brate -> I.setBitrate l (fromIntegral brate)
-    CompressionRatio   ratio -> I.setCompressionRatio l (fromIntegral ratio)
+    CompressionBitrate brate ->
+      I.setBitrate l (fromIntegral brate)
+    CompressionRatio ratio ->
+      I.setCompressionRatio l ratio
     CompressionVBR vbrMode vbrQuality -> do
       (I.setVBRQ l . fromIntegral . min 9) vbrQuality
       case vbrMode of
@@ -174,7 +176,7 @@ encodeMp3 EncoderSettings {..} ipath' opath' = liftIO . I.withLame $ \l -> do
       (fromIntegral waveDataOffset)
       waveDataSize
       ipath
-      opath
+      otemp
     renameFile otemp opath
 
 ----------------------------------------------------------------------------

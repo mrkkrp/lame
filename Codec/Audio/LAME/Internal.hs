@@ -258,11 +258,11 @@ foreign import ccall unsafe "lame_set_brate"
 
 -- | Set compression ratio.
 
-setCompressionRatio :: Lame -> Int -> IO ()
+setCompressionRatio :: Lame -> Float -> IO ()
 setCompressionRatio l x = handleErrors (c_lame_set_compression_ratio l x)
 
 foreign import ccall unsafe "lame_set_compression_ratio"
-  c_lame_set_compression_ratio :: Lame -> Int -> IO Int
+  c_lame_set_compression_ratio :: Lame -> Float -> IO Int
 
 ----------------------------------------------------------------------------
 -- Frame parameters
