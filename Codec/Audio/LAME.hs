@@ -73,7 +73,7 @@ data EncoderSettings = EncoderSettings
   , encoderCopyright :: !Bool
     -- ^ Mark as copyright protected. Default value: 'False'.
   , encoderOriginal :: !Bool
-    -- ^ Mark as original.
+    -- ^ Mark as original. Default value: 'True'.
   , encoderWriteVbrTag :: !Bool
 
     -- Tags
@@ -107,7 +107,7 @@ instance Default EncoderSettings where
     , encoderFindReplayGain  = False
     , encoderNoGap           = Nothing
     , encoderCopyright       = False
-    , encoderOriginal        = False
+    , encoderOriginal        = True
     , encoderErrorProtection = False
     , encoderStrictISO       = False
     , encoderWriteVbrTag     = True
