@@ -16,6 +16,7 @@ module Codec.Audio.LAME
   , EncoderSettings (..)
   , Compression (..)
   , VbrMode (..)
+  , MetadataPlacement (..)
   , I.LameException (..) )
 where
 
@@ -25,6 +26,7 @@ import Control.Monad.Catch
 import Control.Monad.IO.Class
 import Data.Default.Class
 import Data.Maybe (fromMaybe)
+import Data.Text (Text)
 import Data.Word
 import System.Directory
 import System.FilePath
@@ -73,8 +75,53 @@ data EncoderSettings = EncoderSettings
   , encoderOriginal :: !Bool
     -- ^ Mark as original.
   , encoderWriteVbrTag :: !Bool
+
+    -- Tags
+
     -- ^ Whether to write Xing VBR header frame. Default value: 'True'.
+  , encoderMetadataPlacement :: !MetadataPlacement
+    -- ^ Which container to use to write metadata. Default value:
+    -- 'Id3v2Only'.
+  , encoderTagTitle :: !(Maybe Text)
+    -- ^ Title tag to write. Default value: 'Nothing'.
+  , encoderTagArtist :: !(Maybe Text)
+    -- ^ Artist tag to write. Default value: 'Nothing'.
+  , encoderTagAlbum :: !(Maybe Text)
+    -- ^ Album tag to write. Default value: 'Nothing'.
+  , encoderTagYear :: !(Maybe Text)
+    -- ^ Year tag to write. Default value: 'Nothing'.
+  , encoderTagComment :: !(Maybe Text)
+    -- ^ Comment tag to write. Default value: 'Nothing'.
+  , encoderTagTrack :: !(Maybe (Word8, Maybe Word8))
+    -- ^ Track number (first in tuple) and (optionally) total number of
+    -- tracks (second in tuple). Default value: 'Nothing'.
+  , encoderTagGenre :: !(Maybe Text)
+    -- ^ Genre tag to write. Default value: 'Nothing'.
   } deriving (Show, Read, Eq, Ord)
+
+instance Default EncoderSettings where
+  def = EncoderSettings
+    { encoderScale           = 1
+    , encoderSampleRate      = Nothing
+    , encoderFreeFormat      = False
+    , encoderFindReplayGain  = False
+    , encoderNoGap           = Nothing
+    , encoderCopyright       = False
+    , encoderOriginal        = False
+    , encoderErrorProtection = False
+    , encoderStrictISO       = False
+    , encoderWriteVbrTag     = True
+    , encoderQuality         = Nothing
+    , encoderCompression     = CompressionRatio 11
+    , encoderMetadataPlacement = Id3v2Only
+    , encoderTagTitle        = Nothing
+    , encoderTagArtist       = Nothing
+    , encoderTagAlbum        = Nothing
+    , encoderTagYear         = Nothing
+    , encoderTagComment      = Nothing
+    , encoderTagTrack        = Nothing
+    , encoderTagGenre        = Nothing
+    }
 
 -- | The data type represents supported options for compression. You can
 -- specify either fixed bitrate, or compression ratio, or use the VBR mode.
@@ -107,20 +154,13 @@ data VbrMode
     -- ^ VBR MTRH
   deriving (Show, Read, Eq, Ord)
 
-instance Default EncoderSettings where
-  def = EncoderSettings
-    { encoderScale           = 1
-    , encoderSampleRate      = Nothing
-    , encoderFreeFormat      = False
-    , encoderFindReplayGain  = False
-    , encoderNoGap           = Nothing
-    , encoderCopyright       = False
-    , encoderOriginal        = False
-    , encoderErrorProtection = False
-    , encoderStrictISO       = False
-    , encoderWriteVbrTag     = True
-    , encoderQuality         = Nothing
-    , encoderCompression     = CompressionRatio 11 }
+-- | Which container to use to write tags\/metadata.
+
+data MetadataPlacement
+  = Id3v1Only          -- ^ Only write ID3v1 metadata
+  | Id3v2Only          -- ^ Only write ID3v2 metadata
+  | Id3Both            -- ^ Write ID3v1 and ID3v2
+  deriving (Show, Read, Eq, Ord)
 
 -- | Encode a WAVE file or RF64 file to MP3.
 --
@@ -170,6 +210,18 @@ encodeMp3 EncoderSettings {..} ipath' opath' = liftIO . I.withLame $ \l -> do
           forM_ maxRate  (I.setVBRMaxBitrate  l . fromIntegral)
           I.setVBRHardMin l hardMin
         VbrMtrh -> I.setVBR l I.VbrMtrh
+  I.id3TagInit l
+  case encoderMetadataPlacement of
+    Id3v1Only -> I.id3TagV1Only l
+    Id3v2Only -> I.id3TagV2Only l
+    Id3Both   -> I.id3TagAddV2  l
+  forM_ encoderTagTitle   (I.id3TagSetTitle   l)
+  forM_ encoderTagArtist  (I.id3TagSetArtist  l)
+  forM_ encoderTagAlbum   (I.id3TagSetAlbum   l)
+  forM_ encoderTagYear    (I.id3TagSetYear    l)
+  forM_ encoderTagComment (I.id3TagSetComment l)
+  forM_ encoderTagTrack   (uncurry $ I.id3TagSetTrack l)
+  forM_ encoderTagGenre   (I.id3TagSetGenre   l)
   I.initParams l
   withTempFile' opath $ \otemp -> do
     I.encodingHelper l

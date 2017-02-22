@@ -79,14 +79,17 @@ module Codec.Audio.LAME.Internal
   , id3TagSetAlbum
   , id3TagSetYear
   , id3TagSetComment
+  , id3TagSetTrack
+  , id3TagSetGenre
     -- * Encoding
   , encodingHelper )
 where
 
+import Control.Monad
 import Control.Monad.Catch
 import Data.Text (Text)
 import Data.Void
-import Foreign
+import Foreign hiding (void)
 import Foreign.C.String
 import Unsafe.Coerce
 import qualified Data.ByteString    as B
@@ -117,6 +120,9 @@ data LameException
   | LameBadBitrate     -- ^ Unsupported bitrate
   | LameBadSampleFreq  -- ^ Unsupported sample rate
   | LameInternalError  -- ^ An “Internal error” happened
+  | LameInvalidTrackNumber Word8 (Maybe Word8)
+    -- ^ Invalid track number (first argument) or total number of tracks
+    -- (second argument) was supplied
   deriving (Eq, Show, Read)
 
 instance Exception LameException
@@ -419,10 +425,10 @@ foreign import ccall unsafe "id3tag_v2_only"
 -- | Set track's “title” tag.
 
 id3TagSetTitle :: Lame -> Text -> IO ()
-id3TagSetTitle l x = withCStringText x (c_id3tag_set_track l)
+id3TagSetTitle l x = withCStringText x (c_id3tag_set_title l)
 
-foreign import ccall unsafe "id3tag_set_track"
-  c_id3tag_set_track :: Lame -> CString -> IO ()
+foreign import ccall unsafe "id3tag_set_title"
+  c_id3tag_set_title :: Lame -> CString -> IO ()
 
 -- | Set track's “artist” tag.
 
@@ -456,6 +462,32 @@ id3TagSetComment l x = withCStringText x (c_id3tag_set_comment l)
 foreign import ccall unsafe "id3tag_set_comment"
   c_id3tag_set_comment :: Lame -> CString -> IO ()
 
+-- | Set track number. If at least one argument is 0, an exception will be
+-- thrown.
+
+id3TagSetTrack
+  :: Lame              -- ^ The settings
+  -> Word8             -- ^ Index of this track
+  -> Maybe Word8       -- ^ Total number of tracks (optional)
+  -> IO ()
+id3TagSetTrack _ 0 t          = throwM (LameInvalidTrackNumber 0 t)
+id3TagSetTrack _ n t@(Just 0) = throwM (LameInvalidTrackNumber n t)
+id3TagSetTrack l n t =
+  let v = show n ++ maybe "" (("/" ++) . show) t
+  in void $ withCString v (c_id3tag_set_track l)
+
+foreign import ccall unsafe "id3tag_set_track"
+  c_id3tag_set_track :: Lame -> CString -> IO Int
+
+-- | Set genre.
+
+id3TagSetGenre :: Lame -> Text -> IO ()
+id3TagSetGenre l x =
+  void $ withCStringText x (c_id3tag_set_genre l)
+
+foreign import ccall unsafe "id3tag_set_genre"
+  c_id3tag_set_genre :: Lame -> CString -> IO Int
+
 ----------------------------------------------------------------------------
 -- Encoding
 
@@ -472,7 +504,7 @@ encodingHelper l dataOffset dataSize ipath opath =
   withCString ipath $ \ipathPtr ->
     withCString opath $ \opathPtr ->
       c_lame_encoding_helper
-        l              -- lame settings stucture
+        l              -- lame settings structure
         dataOffset     -- offset of data chunk
         dataSize       -- size of data chunk
         ipathPtr       -- path to input file
