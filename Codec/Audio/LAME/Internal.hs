@@ -39,11 +39,6 @@ module Codec.Audio.LAME.Internal
   , setOriginal
   , setErrorProtection
   , setStrictISO
-    -- ** Quantization\/noise shaping
-  -- , setQuantComp
-  -- , setQuantCompShort
-  -- , setExpNspsytune
-  -- , setMsfix
     -- ** VBR control
   , setVBR
   , setVBRQ
@@ -52,23 +47,10 @@ module Codec.Audio.LAME.Internal
   , setVBRMaxBitrate
   , setVBRHardMin
     -- ** Filtering control
-  -- , setLowpassFreq
-  -- , setLowpassWidth
-  -- , setHighpassFreq
-  -- , setHighpassWidth
-    -- ** Psycho-acoustics
-  -- , setAthOnly
-  -- , setAthShort
-  -- , setNoAth
-  -- , setAthType
-  -- , setAthLower
-  -- , setAthAAType
-  -- , setAthAASensitivity
-  -- , setAllowDiffShort
-  -- , setUseTemporal
-  -- , setInterChRatio
-  -- , setNoShortBlocks
-  -- , setForceShortBlocks
+  , setLowpassFreq
+  , setLowpassWidth
+  , setHighpassFreq
+  , setHighpassWidth
     -- * Tags
   , id3TagInit
   , id3TagAddV2
@@ -321,9 +303,6 @@ foreign import ccall unsafe "lame_set_strict_ISO"
   c_lame_set_strict_ISO :: Lame -> Int -> IO Int
 
 ----------------------------------------------------------------------------
--- Quantization/noize shaping
-
-----------------------------------------------------------------------------
 -- VBR control
 
 -- | Set type of VBR.
@@ -383,8 +362,41 @@ foreign import ccall unsafe "lame_set_VBR_hard_min"
 ----------------------------------------------------------------------------
 -- Filtering control
 
-----------------------------------------------------------------------------
--- Psycho-acoustics
+-- | Set frequency to put low-pass filter on. Default is 0 (LAME chooses),
+-- -1 will disable the filter altogether.
+
+setLowpassFreq :: Lame -> Int -> IO ()
+setLowpassFreq l x = handleErrors (c_lame_set_lowpassfreq l x)
+
+foreign import ccall unsafe "lame_set_lowpassfreq"
+  c_lame_set_lowpassfreq :: Lame -> Int -> IO Int
+
+-- | Set width of low-pass transition band. Default is one polyphase filter
+-- band.
+
+setLowpassWidth :: Lame -> Int -> IO ()
+setLowpassWidth l x = handleErrors (c_lame_set_lowpasswidth l x)
+
+foreign import ccall unsafe "lame_set_lowpasswidth"
+  c_lame_set_lowpasswidth :: Lame -> Int -> IO Int
+
+-- | Set frequency to put high-pass filter on. Default is 0 (LAME chooses),
+-- -1 will disable the filter altogether.
+
+setHighpassFreq :: Lame -> Int -> IO ()
+setHighpassFreq l x = handleErrors (c_lame_set_highpassfreq l x)
+
+foreign import ccall unsafe "lame_set_highpassfreq"
+  c_lame_set_highpassfreq :: Lame -> Int -> IO Int
+
+-- | Set width of high-pass transition band. Default is one polyphase filter
+-- band.
+
+setHighpassWidth :: Lame -> Int -> IO ()
+setHighpassWidth l x = handleErrors (c_lame_set_highpasswidth l x)
+
+foreign import ccall unsafe "lame_set_highpasswidth"
+  c_lame_set_highpasswidth :: Lame -> Int -> IO Int
 
 ----------------------------------------------------------------------------
 -- Tags

@@ -17,6 +17,7 @@ module Codec.Audio.LAME
   , Compression (..)
   , VbrMode (..)
   , MetadataPlacement (..)
+  , FilterSetup (..)
   , I.LameException (..) )
 where
 
@@ -97,6 +98,13 @@ data EncoderSettings = EncoderSettings
     -- tracks (second in tuple). Default value: 'Nothing'.
   , encoderTagGenre :: !(Maybe Text)
     -- ^ Genre tag to write. Default value: 'Nothing'.
+
+    -- Filters
+
+  , encoderLowpassFilter :: !FilterSetup
+    -- ^ Settings for low-pass filter. Default value: 'FilterAuto'.
+  , encoderHighpassFilter :: !FilterSetup
+    -- ^ Settings for high-pass filter. Default value: 'FilterAuto'.
   } deriving (Show, Read, Eq, Ord)
 
 instance Default EncoderSettings where
@@ -121,6 +129,8 @@ instance Default EncoderSettings where
     , encoderTagComment      = Nothing
     , encoderTagTrack        = Nothing
     , encoderTagGenre        = Nothing
+    , encoderLowpassFilter   = FilterAuto
+    , encoderHighpassFilter  = FilterAuto
     }
 
 -- | The data type represents supported options for compression. You can
@@ -160,6 +170,17 @@ data MetadataPlacement
   = Id3v1Only          -- ^ Only write ID3v1 metadata
   | Id3v2Only          -- ^ Only write ID3v2 metadata
   | Id3Both            -- ^ Write ID3v1 and ID3v2
+  deriving (Show, Read, Eq, Ord)
+
+-- | Settings for a filter.
+
+data FilterSetup
+  = FilterAuto         -- ^ Filter settings are chosen automatically
+  | FilterDisabled     -- ^ Filter is disabled
+  | FilterManual Word (Maybe Word)
+    -- ^ The first parameter is the filter's frequency (cut-off frequency)
+    -- in Hz and the second parameter is width of transition band in Hz (if
+    -- 'Nothing', it's chosen automatically).
   deriving (Show, Read, Eq, Ord)
 
 -- | Encode a WAVE file or RF64 file to MP3.
@@ -222,6 +243,8 @@ encodeMp3 EncoderSettings {..} ipath' opath' = liftIO . I.withLame $ \l -> do
   forM_ encoderTagComment (I.id3TagSetComment l)
   forM_ encoderTagTrack   (uncurry $ I.id3TagSetTrack l)
   forM_ encoderTagGenre   (I.id3TagSetGenre   l)
+  setupFilter I.setLowpassFreq  I.setLowpassWidth  l encoderLowpassFilter
+  setupFilter I.setHighpassFreq I.setHighpassWidth l encoderHighpassFilter
   I.initParams l
   withTempFile' opath $ \otemp -> do
     I.encodingHelper l
@@ -233,6 +256,20 @@ encodeMp3 EncoderSettings {..} ipath' opath' = liftIO . I.withLame $ \l -> do
 
 ----------------------------------------------------------------------------
 -- Helpers
+
+-- | Setup a filter for given 'I.Lame'.
+
+setupFilter
+  :: (I.Lame -> Int -> IO ()) -- ^ How to set cut-off frequncy
+  -> (I.Lame -> Int -> IO ()) -- ^ How to set width of transition band
+  -> I.Lame            -- ^ Settings to edit
+  -> FilterSetup       -- ^ Filter setup to apply
+  -> IO ()
+setupFilter setFreq _ l FilterAuto = setFreq l 0
+setupFilter setFreq _ l FilterDisabled = setFreq l (-1)
+setupFilter setFreq setWidth l (FilterManual freq mwidth) = do
+  setFreq l (fromIntegral freq)
+  forM_ mwidth (setWidth l . fromIntegral)
 
 -- | A custom wrapper for creating temporary files in the same directory as
 -- given file. 'Handle' is not opened, you only get 'FilePath' in the
