@@ -10,6 +10,7 @@
 -- Low-level non-public helpers.
 
 {-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE RecordWildCards          #-}
 
 module Codec.Audio.LAME.Internal
   ( -- * Types
@@ -67,6 +68,7 @@ module Codec.Audio.LAME.Internal
   , encodingHelper )
 where
 
+import Codec.Audio.Wave
 import Control.Monad
 import Control.Monad.Catch
 import Data.Text (Text)
@@ -105,6 +107,8 @@ data LameException
   | LameInvalidTrackNumber Word8 (Maybe Word8)
     -- ^ Invalid track number (first argument) or total number of tracks
     -- (second argument) was supplied
+  | LameUnsupportedSampleFormat SampleFormat
+    -- ^ This sample format is not supported at this time
   deriving (Eq, Show, Read)
 
 instance Exception LameException
@@ -507,24 +511,35 @@ foreign import ccall unsafe "id3tag_set_genre"
 
 encodingHelper
   :: Lame              -- ^ The settings
-  -> Word64            -- ^ Offset of data chunk
-  -> Word64            -- ^ Size of data chunk
+  -> Wave              -- ^ Information about input WAVE file
   -> FilePath          -- ^ Location of input file (normalized)
   -> FilePath          -- ^ Location of output file (normalized)
   -> IO ()
-encodingHelper l dataOffset dataSize ipath opath =
+encodingHelper l wave@Wave {..} ipath opath = handleErrors $
   withCString ipath $ \ipathPtr ->
     withCString opath $ \opathPtr ->
       c_lame_encoding_helper
         l              -- lame settings structure
-        dataOffset     -- offset of data chunk
-        dataSize       -- size of data chunk
+        (fromIntegral waveDataOffset) -- offset of data chunk
+        waveDataSize   -- size of data chunk
+        (case waveSampleFormat of
+           SampleFormatPcmInt _       -> 0
+           SampleFormatIeeeFloat32Bit -> 1
+           SampleFormatIeeeFloat64Bit -> 2)
+        (waveBitsPerSample wave)  -- bits per sample
         ipathPtr       -- path to input file
         opathPtr       -- path to output file
 
 foreign import ccall unsafe "lame_encoding_helper"
   c_lame_encoding_helper
-    :: Lame -> Word64 -> Word64 -> CString -> CString -> IO ()
+    :: Lame            -- lame settings structure
+    -> Word64          -- offset of data chunk
+    -> Word64          -- size of data chunk
+    -> Word16          -- code of sample format
+    -> Word16          -- bits per sample
+    -> CString         -- path to input file
+    -> CString         -- path to output file
+    -> IO Int
 
 ----------------------------------------------------------------------------
 -- Helpers

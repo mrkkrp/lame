@@ -198,6 +198,11 @@ encodeMp3 EncoderSettings {..} ipath' opath' = liftIO . I.withLame $ \l -> do
   ipath <- makeAbsolute ipath'
   opath <- makeAbsolute opath'
   wave@Wave {..}  <- readWaveFile ipath
+  case waveSampleFormat of
+    SampleFormatPcmInt bps ->
+      when (bps > 16 || bps <= 8) $
+        throwM (I.LameUnsupportedSampleFormat waveSampleFormat)
+    _ -> return ()
   I.setNumSamples l waveSamplesTotal
   I.setInputSampleRate l (fromIntegral waveSampleRate)
   I.setNumChannels l (fromIntegral $ waveChannels wave)
@@ -247,11 +252,7 @@ encodeMp3 EncoderSettings {..} ipath' opath' = liftIO . I.withLame $ \l -> do
   setupFilter I.setHighpassFreq I.setHighpassWidth l encoderHighpassFilter
   I.initParams l
   withTempFile' opath $ \otemp -> do
-    I.encodingHelper l
-      (fromIntegral waveDataOffset)
-      waveDataSize
-      ipath
-      otemp
+    I.encodingHelper l wave ipath otemp
     renameFile otemp opath
 
 ----------------------------------------------------------------------------
