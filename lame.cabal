@@ -46,6 +46,7 @@ description:          Complete high-level binding to LAME encoder.
 extra-source-files:   cbits/*.h
 extra-doc-files:      CHANGELOG.md
                     , README.md
+data-files:           audio-samples/*.wav
 
 source-repository head
   type:               git
@@ -84,6 +85,7 @@ test-suite tests
   build-depends:      base             >= 4.8   && < 5.0
                     , hspec            >= 2.0   && < 3.0
                     , lame             >= 0.1.0
+  other-modules:      Codec.Audio.LAMESpec
   if flag(dev)
     ghc-options:      -Wall -Werror
   else
