@@ -10,7 +10,8 @@
 -- The module provides an interface to LAME MP3 encoder. All you need to do
 -- to encode a WAVE (or RF64) file is to call 'encodeMp3', which see.
 
-{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards   #-}
 
 module Codec.Audio.LAME
   ( encodeMp3
@@ -34,6 +35,7 @@ import System.Directory
 import System.FilePath
 import System.IO
 import qualified Codec.Audio.LAME.Internal as I
+import qualified Data.Text                 as T
 
 -- | LAME encoder settings.
 --
@@ -246,13 +248,13 @@ encodeMp3 EncoderSettings {..} ipath' opath' = liftIO . I.withLame $ \l -> do
     Id3v1Only -> I.id3TagV1Only l
     Id3v2Only -> I.id3TagV2Only l
     Id3Both   -> I.id3TagAddV2  l
-  forM_ encoderTagTitle   (I.id3TagSetTitle   l)
-  forM_ encoderTagArtist  (I.id3TagSetArtist  l)
-  forM_ encoderTagAlbum   (I.id3TagSetAlbum   l)
-  forM_ encoderTagYear    (I.id3TagSetYear    l)
+  forM_ encoderTagTitle   (I.id3TagSetTextInfo l "TIT2")
+  forM_ encoderTagArtist  (I.id3TagSetTextInfo l "TPE1")
+  forM_ encoderTagAlbum   (I.id3TagSetTextInfo l "TALB")
+  forM_ encoderTagYear    (I.id3TagSetTextInfo l "TYER")
   forM_ encoderTagComment (I.id3TagSetComment l)
-  forM_ encoderTagTrack   (uncurry $ I.id3TagSetTrack l)
-  forM_ encoderTagGenre   (I.id3TagSetGenre   l)
+  forM_ encoderTagTrack   (uncurry renderTrackNumber >=> I.id3TagSetTextInfo l "TRCK")
+  forM_ encoderTagGenre   (I.id3TagSetTextInfo l "TCON")
   setupFilter I.setLowpassFreq  I.setLowpassWidth  l encoderLowpassFilter
   setupFilter I.setHighpassFreq I.setHighpassWidth l encoderHighpassFilter
   I.initParams l
@@ -300,3 +302,8 @@ ignoringIOErrors ioe = ioe `catch` handler
   where
     handler :: IOError -> IO ()
     handler = const (return ())
+
+renderTrackNumber :: Word8 -> Maybe Word8 -> IO Text
+renderTrackNumber 0 t          = throwM (I.LameInvalidTrackNumber 0 t)
+renderTrackNumber n t@(Just 0) = throwM (I.LameInvalidTrackNumber n t)
+renderTrackNumber n t = return . T.pack $ show n ++ maybe "" (("/" ++) . show) t
