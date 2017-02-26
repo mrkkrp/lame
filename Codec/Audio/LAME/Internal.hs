@@ -57,28 +57,20 @@ module Codec.Audio.LAME.Internal
   , id3TagAddV2
   , id3TagV1Only
   , id3TagV2Only
-  , id3TagSetTitle
-  , id3TagSetArtist
-  , id3TagSetAlbum
-  , id3TagSetYear
+  , id3TagSetTextInfo
   , id3TagSetComment
-  , id3TagSetTrack
-  , id3TagSetGenre
     -- * Encoding
   , encodingHelper )
 where
 
 import Codec.Audio.Wave
-import Control.Monad
 import Control.Monad.Catch
 import Data.Text (Text)
 import Data.Void
 import Foreign hiding (void)
 import Foreign.C.String
 import Unsafe.Coerce
-import qualified Data.ByteString    as B
-import qualified Data.Text          as T
-import qualified Data.Text.Encoding as T
+import qualified Data.Text.Foreign as TF
 
 ----------------------------------------------------------------------------
 -- Types
@@ -438,71 +430,26 @@ id3TagV2Only = c_id3tag_v2_only
 foreign import ccall unsafe "id3tag_v2_only"
   c_id3tag_v2_only :: Lame -> IO ()
 
--- | Set track's “title” tag.
+-- | Set a textual tag identifying it by its ID.
 
-id3TagSetTitle :: Lame -> Text -> IO ()
-id3TagSetTitle l x = withCStringText x (c_id3tag_set_title l)
+id3TagSetTextInfo :: Lame -> String -> Text -> IO ()
+id3TagSetTextInfo l id' text = handleErrors $
+  withCString id' $ \idPtr ->
+    TF.useAsPtr text $ \textPtr len ->
+      c_id3tag_set_textinfo_utf16 l idPtr textPtr (fromIntegral len)
 
-foreign import ccall unsafe "id3tag_set_title"
-  c_id3tag_set_title :: Lame -> CString -> IO ()
+foreign import ccall unsafe "id3tag_set_textinfo_utf16_"
+  c_id3tag_set_textinfo_utf16 :: Lame -> CString -> Ptr Word16 -> Int -> IO Int
 
--- | Set track's “artist” tag.
-
-id3TagSetArtist :: Lame -> Text -> IO ()
-id3TagSetArtist l x = withCStringText x (c_id3tag_set_artist l)
-
-foreign import ccall unsafe "id3tag_set_artist"
-  c_id3tag_set_artist :: Lame -> CString -> IO ()
-
--- | Set track's “album” tag.
-
-id3TagSetAlbum :: Lame -> Text -> IO ()
-id3TagSetAlbum l x = withCStringText x (c_id3tag_set_album l)
-
-foreign import ccall unsafe "id3tag_set_album"
-  c_id3tag_set_album :: Lame -> CString -> IO ()
-
--- | Set track's “year” tag.
-
-id3TagSetYear :: Lame -> Text -> IO ()
-id3TagSetYear l x = withCStringText x (c_id3tag_set_year l)
-
-foreign import ccall unsafe "id3tag_set_year"
-  c_id3tag_set_year :: Lame -> CString -> IO ()
-
--- | Set track's “comment” tag.
+-- | Set the comment tag. No idea why they give it special treatment.
 
 id3TagSetComment :: Lame -> Text -> IO ()
-id3TagSetComment l x = withCStringText x (c_id3tag_set_comment l)
+id3TagSetComment l text = handleErrors $
+  TF.useAsPtr text $ \textPtr len ->
+    c_id3tag_set_comment_utf16 l textPtr (fromIntegral len)
 
-foreign import ccall unsafe "id3tag_set_comment"
-  c_id3tag_set_comment :: Lame -> CString -> IO ()
-
--- | Set track number. If at least one argument is 0, an exception will be
--- thrown.
-
-id3TagSetTrack
-  :: Lame              -- ^ The settings
-  -> Word8             -- ^ Index of this track
-  -> Maybe Word8       -- ^ Total number of tracks (optional)
-  -> IO ()
-id3TagSetTrack _ 0 t          = throwM (LameInvalidTrackNumber 0 t)
-id3TagSetTrack _ n t@(Just 0) = throwM (LameInvalidTrackNumber n t)
-id3TagSetTrack l n t =
-  let v = show n ++ maybe "" (("/" ++) . show) t
-  in void $ withCString v (c_id3tag_set_track l)
-
-foreign import ccall unsafe "id3tag_set_track"
-  c_id3tag_set_track :: Lame -> CString -> IO Int
-
--- | Set genre.
-
-id3TagSetGenre :: Lame -> Text -> IO ()
-id3TagSetGenre l x =
-  void $ withCStringText x (c_id3tag_set_genre l)
-
-foreign import ccall unsafe "id3tag_set_genre"
-  c_id3tag_set_genre :: Lame -> CString -> IO Int
+foreign import ccall unsafe "id3tag_set_comment_utf16_"
+  c_id3tag_set_comment_utf16 :: Lame -> Ptr Word16 -> Int -> IO Int
 
 ----------------------------------------------------------------------------
 -- Encoding
@@ -566,10 +513,3 @@ handleErrors m = do
     -12 -> throwM LameBadSampleFreq
     -13 -> throwM LameInternalError
     _   -> throwM LameGenericError
-
--- | Convert a 'Text' value to null-terminated C string that will be freed
--- automatically. Null bytes are removed from the 'Text' value first.
-
-withCStringText :: Text -> (CString -> IO a) -> IO a
-withCStringText text = B.useAsCString bytes
-  where bytes = T.encodeUtf8 (T.filter (/= '\0') text)

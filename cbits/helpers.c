@@ -33,6 +33,39 @@
 
 #include "helpers.h"
 
+int id3tag_set_textinfo_utf16_
+  ( lame_global_flags *gfp
+  , const char *id
+  , const uint16_t *raw_text
+  , int len)
+{
+  uint16_t *text = alloca(sizeof(uint16_t) * (len + 2));
+  int i;
+  *(text + 0) = 0xfeff; /* BOM */
+  for (i = 0; i < len; i++)
+    {
+      *(text + i + 1) = *(raw_text + i);
+    }
+  *(text + len + 1) = 0;
+  return id3tag_set_textinfo_utf16(gfp, id, text);
+}
+
+int id3tag_set_comment_utf16_
+  ( lame_global_flags *gfp
+  , const uint16_t *raw_text
+  , int len )
+{
+  uint16_t *text = alloca(sizeof(uint16_t) * (len + 2));
+  int i;
+  *(text + 0) = 0xfeff; /* BOM */
+  for (i = 0; i < len; i++)
+    {
+      *(text + i + 1) = *(raw_text + i);
+    }
+  *(text + len + 1) = 0;
+  return id3tag_set_comment_utf16(gfp, 0, 0, text);
+}
+
 static unsigned round_to_bytes(unsigned bits)
 {
   return (bits + (bits % 8)) / 8;
