@@ -40,9 +40,9 @@ maintainer:           Mark Karpov <markkarpov@openmailbox.org>
 homepage:             https://github.com/mrkkrp/lame
 bug-reports:          https://github.com/mrkkrp/lame/issues
 category:             Codec, Audio
-synopsis:             Complete high-level binding to LAME encoder
+synopsis:             Fairly complete high-level binding to LAME encoder
 build-type:           Simple
-description:          Complete high-level binding to LAME encoder.
+description:          Fairly complete high-level binding to LAME encoder.
 extra-source-files:   cbits/*.h
 extra-doc-files:      CHANGELOG.md
                     , README.md
