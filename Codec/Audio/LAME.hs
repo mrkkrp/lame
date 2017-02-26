@@ -7,7 +7,8 @@
 -- Stability   :  experimental
 -- Portability :  portable
 --
--- The module provides an interface to LAME MP3 encoder.
+-- The module provides an interface to LAME MP3 encoder. All you need to do
+-- to encode a WAVE (or RF64) file is to call 'encodeMp3', which see.
 
 {-# LANGUAGE RecordWildCards #-}
 
@@ -35,6 +36,9 @@ import System.IO
 import qualified Codec.Audio.LAME.Internal as I
 
 -- | LAME encoder settings.
+--
+-- Currently some noise-shaping and psycho-acoustic parameters are omitted,
+-- but can be added on request.
 
 data EncoderSettings = EncoderSettings
   { encoderCompression :: !Compression
@@ -55,9 +59,6 @@ data EncoderSettings = EncoderSettings
     -- ^ Enable “no gap” encoding. The first value in the tuple specifies
     -- current index and the second value specifies total number of tracks.
     -- Default value: 'Nothing' — disabled.
-  , encoderFindReplayGain :: !Bool
-    -- ^ Whether to calculated ReplayGain and write it to headers. Default
-    -- value: 'False'.
   , encoderErrorProtection :: !Bool
     -- ^ Whether to enable error protection. Error protection means that 2
     -- bytes from each frame for CRC checksum. Default value: 'False'.
@@ -76,9 +77,6 @@ data EncoderSettings = EncoderSettings
   , encoderOriginal :: !Bool
     -- ^ Mark as original. Default value: 'True'.
   , encoderWriteVbrTag :: !Bool
-
-    -- Tags
-
     -- ^ Whether to write Xing VBR header frame. Default value: 'True'.
   , encoderMetadataPlacement :: !MetadataPlacement
     -- ^ Which container to use to write metadata. Default value:
@@ -98,9 +96,6 @@ data EncoderSettings = EncoderSettings
     -- tracks (second in tuple). Default value: 'Nothing'.
   , encoderTagGenre :: !(Maybe Text)
     -- ^ Genre tag to write. Default value: 'Nothing'.
-
-    -- Filters
-
   , encoderLowpassFilter :: !FilterSetup
     -- ^ Settings for low-pass filter. Default value: 'FilterAuto'.
   , encoderHighpassFilter :: !FilterSetup
@@ -112,7 +107,6 @@ instance Default EncoderSettings where
     { encoderScale           = 1
     , encoderSampleRate      = Nothing
     , encoderFreeFormat      = False
-    , encoderFindReplayGain  = False
     , encoderNoGap           = Nothing
     , encoderCopyright       = False
     , encoderOriginal        = True
@@ -134,7 +128,7 @@ instance Default EncoderSettings where
     }
 
 -- | The data type represents supported options for compression. You can
--- specify either fixed bitrate, or compression ratio, or use the VBR mode.
+-- specify either fixed bitrate, compression ratio, or use the VBR mode.
 
 data Compression
   = CompressionBitrate Word
@@ -154,6 +148,7 @@ data VbrMode
     -- ^ VBR RH.
   | VbrAbr (Maybe Word) (Maybe Word) (Maybe Word) Bool
     -- ^ VBR ABR. Parameters of the data constructor in order:
+    --
     --     * Minimal bitrate
     --     * Mean bitrate
     --     * Maximal bitrate
@@ -186,13 +181,24 @@ data FilterSetup
 -- | Encode a WAVE file or RF64 file to MP3.
 --
 -- If the input file is not a valid WAVE file, 'WaveException' will be
--- thrown. 'LameException' is thrown when underlying LAME encoder reports a
--- problem.
+-- thrown. 'I.LameException' is thrown when underlying LAME encoder reports
+-- a problem.
+--
+-- Not all sample formats and bit depth are currently supported. Supported
+-- sample formats include:
+--
+--     * PCM with samples represented as signed integers > 8 bit and <= 16
+--       bit per mono-sample.
+--     * IEEE floating point (32 bit) samples.
+--     * IEEE floating point (64 bit) samples.
+--
+-- If you feed the encoder with something else, expect
+-- 'I.LameUnsupportedSampleFormat' to be thrown.
 
 encodeMp3 :: MonadIO m
   => EncoderSettings   -- ^ Encoder settings
-  -> FilePath          -- ^ File to encode
-  -> FilePath          -- ^ Where to save the resulting FLAC file
+  -> FilePath          -- ^ WAVE file to encode
+  -> FilePath          -- ^ Where to save the resulting MP3 file
   -> m ()
 encodeMp3 EncoderSettings {..} ipath' opath' = liftIO . I.withLame $ \l -> do
   ipath <- makeAbsolute ipath'
@@ -210,7 +216,6 @@ encodeMp3 EncoderSettings {..} ipath' opath' = liftIO . I.withLame $ \l -> do
   let targetSampleRate = fromMaybe waveSampleRate encoderSampleRate
   I.setOutputSampleRate l (fromIntegral targetSampleRate)
   I.setFreeFormat l encoderFreeFormat
-  I.setFindReplayGain l encoderFindReplayGain
   forM_ encoderNoGap $ \(currentIndex, total) -> do
     I.setNoGapCurrentIndex l (fromIntegral currentIndex)
     I.setNoGapTotal        l (fromIntegral total)
