@@ -84,6 +84,7 @@ test-suite tests
   type:               exitcode-stdio-1.0
   build-depends:      base             >= 4.8   && < 5.0
                     , hspec            >= 2.0   && < 3.0
+                    , htaglib          >= 1.0   && < 1.1
                     , lame             >= 0.1.0
   other-modules:      Codec.Audio.LAMESpec
   if flag(dev)

@@ -5,11 +5,11 @@ sudo: false
 matrix:
   include:
     - env: CABALVER=1.24 GHCVER=7.10.3
-      addons: {apt: {packages: [cabal-install-1.24,ghc-7.10.3,libmp3lame-dev],sources: [hvr-ghc]}}
+      addons: {apt: {packages: [cabal-install-1.24,ghc-7.10.3,libmp3lame-dev,libtagc0-dev],sources: [hvr-ghc]}}
     - env: CABALVER=1.24 GHCVER=8.0.2
-      addons: {apt: {packages: [cabal-install-1.24,ghc-8.0.2,libmp3lame-dev], sources: [hvr-ghc]}}
+      addons: {apt: {packages: [cabal-install-1.24,ghc-8.0.2,libmp3lame-dev,libtagc0-dev], sources: [hvr-ghc]}}
     - env: CABALVER=head GHCVER=head
-      addons: {apt: {packages: [cabal-install-head,ghc-head,libmp3lame-dev],  sources: [hvr-ghc]}}
+      addons: {apt: {packages: [cabal-install-head,ghc-head,libmp3lame-dev,libtagc0-dev],  sources: [hvr-ghc]}}
 
   allow_failures:
     - env: CABALVER=head GHCVER=head
