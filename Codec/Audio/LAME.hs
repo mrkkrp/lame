@@ -27,6 +27,7 @@ import Codec.Audio.Wave
 import Control.Monad
 import Control.Monad.Catch
 import Control.Monad.IO.Class
+import Data.ByteString (ByteString)
 import Data.Default.Class
 import Data.Maybe (fromMaybe)
 import Data.Text (Text)
@@ -98,6 +99,9 @@ data EncoderSettings = EncoderSettings
     -- tracks (second in tuple). Default value: 'Nothing'.
   , encoderTagGenre :: !(Maybe Text)
     -- ^ Genre tag to write. Default value: 'Nothing'.
+  , encoderAlbumArt :: !(Maybe ByteString)
+    -- ^ Album art (a picture) to write (JPEG\/PNG\/GIF). Default value:
+    -- 'Nothing'.
   , encoderLowpassFilter :: !FilterSetup
     -- ^ Settings for low-pass filter. Default value: 'FilterAuto'.
   , encoderHighpassFilter :: !FilterSetup
@@ -125,9 +129,9 @@ instance Default EncoderSettings where
     , encoderTagComment      = Nothing
     , encoderTagTrack        = Nothing
     , encoderTagGenre        = Nothing
+    , encoderAlbumArt        = Nothing
     , encoderLowpassFilter   = FilterAuto
-    , encoderHighpassFilter  = FilterAuto
-    }
+    , encoderHighpassFilter  = FilterAuto }
 
 -- | The data type represents supported options for compression. You can
 -- specify either fixed bitrate, compression ratio, or use the VBR mode.
@@ -255,6 +259,7 @@ encodeMp3 EncoderSettings {..} ipath' opath' = liftIO . I.withLame $ \l -> do
   forM_ encoderTagComment (I.id3TagSetComment l)
   forM_ encoderTagTrack   (uncurry renderTrackNumber >=> I.id3TagSetTextInfo l "TRCK")
   forM_ encoderTagGenre   (I.id3TagSetTextInfo l "TCON")
+  forM_ encoderAlbumArt   (I.id3TagSetAlbumArt l)
   setupFilter I.setLowpassFreq  I.setLowpassWidth  l encoderLowpassFilter
   setupFilter I.setHighpassFreq I.setHighpassWidth l encoderHighpassFilter
   I.initParams l

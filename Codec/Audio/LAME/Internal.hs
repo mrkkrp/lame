@@ -59,18 +59,22 @@ module Codec.Audio.LAME.Internal
   , id3TagV2Only
   , id3TagSetTextInfo
   , id3TagSetComment
+  , id3TagSetAlbumArt
     -- * Encoding
   , encodingHelper )
 where
 
 import Codec.Audio.Wave
 import Control.Monad.Catch
+import Data.ByteString (ByteString)
 import Data.Text (Text)
 import Data.Void
 import Foreign hiding (void)
 import Foreign.C.String
+import Foreign.C.Types (CSize (..))
 import Unsafe.Coerce
-import qualified Data.Text.Foreign as TF
+import qualified Data.ByteString.Unsafe as B
+import qualified Data.Text.Foreign      as TF
 
 ----------------------------------------------------------------------------
 -- Types
@@ -441,7 +445,7 @@ id3TagSetTextInfo l id' text = handleErrors $
 foreign import ccall unsafe "id3tag_set_textinfo_utf16_"
   c_id3tag_set_textinfo_utf16 :: Lame -> CString -> Ptr Word16 -> Int -> IO Int
 
--- | Set the comment tag. No idea why they give it special treatment.
+-- | Set the comment tag.
 
 id3TagSetComment :: Lame -> Text -> IO ()
 id3TagSetComment l text = handleErrors $
@@ -450,6 +454,16 @@ id3TagSetComment l text = handleErrors $
 
 foreign import ccall unsafe "id3tag_set_comment_utf16_"
   c_id3tag_set_comment_utf16 :: Lame -> Ptr Word16 -> Int -> IO Int
+
+-- | Set album art.
+
+id3TagSetAlbumArt :: Lame -> ByteString -> IO ()
+id3TagSetAlbumArt l img = handleErrors $
+  B.unsafeUseAsCStringLen img $ \(dataPtr, dataLen) ->
+    c_id3tag_set_albumart l dataPtr (fromIntegral dataLen)
+
+foreign import ccall unsafe "id3tag_set_albumart"
+  c_id3tag_set_albumart :: Lame -> CString -> CSize -> IO Int
 
 ----------------------------------------------------------------------------
 -- Encoding

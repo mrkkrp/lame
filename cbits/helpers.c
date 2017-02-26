@@ -84,7 +84,7 @@ int lame_encoding_helper
   unsigned msw = round_to_bytes(bits_per_sample);
   unsigned block_align = channels * msw;
   uint64_t samples_to_process = data_size / block_align;
-  uint64_t read_size = 4096;
+  uint64_t read_size = 0xffff; /* we need a bit more here because of pictures in metadata */
   void *buffer = malloc(read_size * block_align);
   size_t mp3buffer_size = 1.3 * read_size + 7200;
   void *mp3buffer = malloc(mp3buffer_size);
