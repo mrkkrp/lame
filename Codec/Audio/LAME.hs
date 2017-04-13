@@ -308,6 +308,9 @@ ignoringIOErrors ioe = ioe `catch` handler
     handler :: IOError -> IO ()
     handler = const (return ())
 
+-- | Render track number and optionally total number of tracks as a strict
+-- 'Text' value.
+
 renderTrackNumber :: Word8 -> Maybe Word8 -> IO Text
 renderTrackNumber 0 t          = throwM (I.LameInvalidTrackNumber 0 t)
 renderTrackNumber n t@(Just 0) = throwM (I.LameInvalidTrackNumber n t)
