@@ -9,6 +9,7 @@
 --
 -- Low-level non-public helpers.
 
+{-# LANGUAGE FlexibleContexts         #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE RecordWildCards          #-}
 
@@ -67,12 +68,12 @@ where
 import Codec.Audio.Wave
 import Control.Monad.Catch
 import Data.ByteString (ByteString)
+import Data.Coerce
 import Data.Text (Text)
 import Data.Void
 import Foreign hiding (void)
 import Foreign.C.String
 import Foreign.C.Types (CSize (..))
-import Unsafe.Coerce
 import qualified Data.ByteString.Unsafe as B
 import qualified Data.Text.Foreign      as TF
 
@@ -152,7 +153,7 @@ foreign import ccall unsafe "lame_init_params"
 ----------------------------------------------------------------------------
 -- Input stream description
 
--- | Set total number of samples to encode.
+-- | Set the total number of samples to encode.
 
 setNumSamples :: Lame -> Word64 -> IO ()
 setNumSamples l x = handleErrors (c_lame_set_num_samples l x)
@@ -208,9 +209,9 @@ foreign import ccall unsafe "lame_set_bWriteVbrTag"
 -- expensive or cheap algorithms. 0 gives the best quality (very slow). 9 is
 -- very fast, but gives worst quality.
 --
---     * 2 — near-best quality, not too slow.
---     * 5 — good quality, fast.
---     * 7 — OK quality, really fast.
+--     * 2—near-best quality, not too slow.
+--     * 5—good quality, fast.
+--     * 7—OK quality, really fast.
 
 setQuality :: Lame -> Int -> IO ()
 setQuality l x = handleErrors (c_lame_set_quality l x)
@@ -509,10 +510,10 @@ foreign import ccall unsafe "lame_encoding_helper"
 -- it is, otherwise return the given pointer unchanged. Needless to say that
 -- this thing is unsafe.
 
-maybePtr :: a -> Maybe a
+maybePtr :: Coercible a (Ptr p) => a -> Maybe a
 maybePtr a
-  | unsafeCoerce a == nullPtr = Nothing
-  | otherwise                 = Just a
+  | coerce a == nullPtr = Nothing
+  | otherwise           = Just a
 
 -- | Treat the 'Int' value as a error code. Unless it's 0, throw
 -- corresponding 'LameException', otherwise just return the unit.

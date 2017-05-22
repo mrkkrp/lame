@@ -52,16 +52,16 @@ data EncoderSettings = EncoderSettings
     -- expensive or cheap algorithms. 0 gives the best quality (very slow). 9 is
     -- very fast, but gives worst quality.
     --
-    --     * 2 — near-best quality, not too slow.
-    --     * 5 — good quality, fast.
-    --     * 7 — OK quality, really fast.
+    --     * 2—near-best quality, not too slow.
+    --     * 5—good quality, fast.
+    --     * 7—OK quality, really fast.
     --
     -- Default value: 'Nothing', meaning that LAME will select the best
     -- value itself.
   , encoderNoGap :: !(Maybe (Word32, Word32))
     -- ^ Enable “no gap” encoding. The first value in the tuple specifies
     -- current index and the second value specifies total number of tracks.
-    -- Default value: 'Nothing' — disabled.
+    -- Default value: 'Nothing'—disabled.
   , encoderErrorProtection :: !Bool
     -- ^ Whether to enable error protection. Error protection means that 2
     -- bytes from each frame for CRC checksum. Default value: 'False'.
