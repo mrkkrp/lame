@@ -5,10 +5,9 @@
 [![Stackage Nightly](http://stackage.org/package/lame/badge/nightly)](http://stackage.org/nightly/package/lame)
 [![Stackage LTS](http://stackage.org/package/lame/badge/lts)](http://stackage.org/lts/package/lame)
 [![Build Status](https://travis-ci.org/mrkkrp/lame.svg?branch=master)](https://travis-ci.org/mrkkrp/lame)
-[![Coverage Status](https://coveralls.io/repos/mrkkrp/lame/badge.svg?branch=master&service=github)](https://coveralls.io/github/mrkkrp/lame?branch=master)
 
-This is a fairly complete high-level Haskell binding
-to [LAME](http://lame.sourceforge.net/).
+This is a fairly complete high-level Haskell binding to
+[LAME](http://lame.sourceforge.net/).
 
 ## Provided functionality
 
