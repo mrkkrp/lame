@@ -1,3 +1,8 @@
+## LAME 0.2.0
+
+* Got rid of `data-default-class`. Instead of making `EncoderSettings` an
+  instance of `Default` we export `defaultEncoderSettings`.
+
 ## LAME 0.1.1
 
 * Improved documentation and metadata.

@@ -16,6 +16,7 @@
 module Codec.Audio.LAME
   ( encodeMp3
   , EncoderSettings (..)
+  , defaultEncoderSettings
   , Compression (..)
   , VbrMode (..)
   , MetadataPlacement (..)
@@ -28,7 +29,6 @@ import Control.Monad
 import Control.Monad.Catch
 import Control.Monad.IO.Class
 import Data.ByteString (ByteString)
-import Data.Default.Class
 import Data.Maybe (fromMaybe)
 import Data.Text (Text)
 import Data.Word
@@ -108,30 +108,35 @@ data EncoderSettings = EncoderSettings
     -- ^ Settings for high-pass filter. Default value: 'FilterAuto'.
   } deriving (Show, Read, Eq, Ord)
 
-instance Default EncoderSettings where
-  def = EncoderSettings
-    { encoderScale           = 1
-    , encoderSampleRate      = Nothing
-    , encoderFreeFormat      = False
-    , encoderNoGap           = Nothing
-    , encoderCopyright       = False
-    , encoderOriginal        = True
-    , encoderErrorProtection = False
-    , encoderStrictISO       = False
-    , encoderWriteVbrTag     = True
-    , encoderQuality         = Nothing
-    , encoderCompression     = CompressionRatio 11
-    , encoderMetadataPlacement = Id3v2Only
-    , encoderTagTitle        = Nothing
-    , encoderTagArtist       = Nothing
-    , encoderTagAlbum        = Nothing
-    , encoderTagYear         = Nothing
-    , encoderTagComment      = Nothing
-    , encoderTagTrack        = Nothing
-    , encoderTagGenre        = Nothing
-    , encoderAlbumArt        = Nothing
-    , encoderLowpassFilter   = FilterAuto
-    , encoderHighpassFilter  = FilterAuto }
+-- | Default value of 'EncoderSettings'.
+--
+-- @since 0.2.0
+
+defaultEncoderSettings :: EncoderSettings
+defaultEncoderSettings = EncoderSettings
+  { encoderScale           = 1
+  , encoderSampleRate      = Nothing
+  , encoderFreeFormat      = False
+  , encoderNoGap           = Nothing
+  , encoderCopyright       = False
+  , encoderOriginal        = True
+  , encoderErrorProtection = False
+  , encoderStrictISO       = False
+  , encoderWriteVbrTag     = True
+  , encoderQuality         = Nothing
+  , encoderCompression     = CompressionRatio 11
+  , encoderMetadataPlacement = Id3v2Only
+  , encoderTagTitle        = Nothing
+  , encoderTagArtist       = Nothing
+  , encoderTagAlbum        = Nothing
+  , encoderTagYear         = Nothing
+  , encoderTagComment      = Nothing
+  , encoderTagTrack        = Nothing
+  , encoderTagGenre        = Nothing
+  , encoderAlbumArt        = Nothing
+  , encoderLowpassFilter   = FilterAuto
+  , encoderHighpassFilter  = FilterAuto
+  }
 
 -- | The data type represents supported options for compression. You can
 -- specify either fixed bitrate, compression ratio, or use the VBR mode.
