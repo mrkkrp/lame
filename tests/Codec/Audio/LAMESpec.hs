@@ -7,7 +7,6 @@ where
 
 import Codec.Audio.LAME
 import Control.Monad
-import Data.Default.Class
 import Data.Text (Text)
 import Data.Word (Word8)
 import Sound.HTagLib
@@ -36,7 +35,7 @@ spec =
   describe "encodeMp3" $
     withVariousWaves $
       it "produces correct MP3 file" $ \(ipath, opath) -> do
-        encodeMp3 def
+        encodeMp3 defaultEncoderSettings
           { encoderTagTitle   = pure tagTitle
           , encoderTagArtist  = pure tagArtist
           , encoderTagAlbum   = pure tagAlbum
