@@ -1,3 +1,7 @@
+## Unreleased
+
+* Dropped support for GHC 7.10.
+
 ## LAME 0.2.0
 
 * Got rid of `data-default-class`. Instead of making `EncoderSettings` an
