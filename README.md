@@ -37,6 +37,6 @@ tracker for this project](https://github.com/mrkkrp/lame/issues).
 
 ## License
 
-Copyright © 2017–2019 Mark Karpov
+Copyright © 2017–present Mark Karpov
 
 Distributed under BSD 3 clause license.
