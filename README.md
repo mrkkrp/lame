@@ -32,8 +32,10 @@ limitations are easily lifted.
 
 ## Contribution
 
-Please kindly direct all issues, bugs, and questions to [the GitHub issue
-tracker for this project](https://github.com/mrkkrp/lame/issues).
+Please direct all issues, bugs, and questions to [the GitHub issue tracker
+for this project](https://github.com/mrkkrp/lame/issues).
+
+Pull requests are also welcome.
 
 ## License
 
