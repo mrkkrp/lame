@@ -1,72 +1,79 @@
-name:                 lame
-version:              0.2.0
-cabal-version:        1.18
-tested-with:          GHC==8.6.5, GHC==8.8.3, GHC==8.10.1
-license:              BSD3
-license-file:         LICENSE.md
-author:               Mark Karpov <markkarpov92@gmail.com>
-maintainer:           Mark Karpov <markkarpov92@gmail.com>
-homepage:             https://github.com/mrkkrp/lame
-bug-reports:          https://github.com/mrkkrp/lame/issues
-category:             Codec, Audio
-synopsis:             Fairly complete high-level binding to LAME encoder
-build-type:           Simple
-description:          Fairly complete high-level binding to LAME encoder.
-extra-source-files:   cbits/*.h
-extra-doc-files:      CHANGELOG.md
-                    , README.md
-data-files:           audio-samples/*.wav
+cabal-version:      1.18
+name:               lame
+version:            0.2.0
+license:            BSD3
+license-file:       LICENSE.md
+maintainer:         Mark Karpov <markkarpov92@gmail.com>
+author:             Mark Karpov <markkarpov92@gmail.com>
+tested-with:        ghc ==8.6.5 ghc ==8.8.3 ghc ==8.10.1
+homepage:           https://github.com/mrkkrp/lame
+bug-reports:        https://github.com/mrkkrp/lame/issues
+synopsis:           Fairly complete high-level binding to LAME encoder
+description:        Fairly complete high-level binding to LAME encoder.
+category:           Codec, Audio
+build-type:         Simple
+data-files:         audio-samples/*.wav
+extra-source-files: cbits/*.h
+extra-doc-files:
+    CHANGELOG.md
+    README.md
 
 source-repository head
-  type:               git
-  location:           https://github.com/mrkkrp/lame.git
+    type:     git
+    location: https://github.com/mrkkrp/lame.git
 
 flag dev
-  description:        Turn on development settings.
-  manual:             True
-  default:            False
+    description: Turn on development settings.
+    default:     False
+    manual:      True
 
 library
-  build-depends:      base             >= 4.12  && < 5.0
-                    , bytestring       >= 0.2   && < 0.11
-                    , directory        >= 1.2.2 && < 1.4
-                    , exceptions       >= 0.6   && < 0.11
-                    , filepath         >= 1.2   && < 1.5
-                    , text             >= 0.2   && < 1.3
-                    , transformers     >= 0.4   && < 0.6
-                    , wave             >= 0.1.2 && < 0.3
-  extra-libraries:    mp3lame
-  exposed-modules:    Codec.Audio.LAME
-  other-modules:      Codec.Audio.LAME.Internal
-  c-sources:          cbits/helpers.c
-  include-dirs:       cbits
-  if flag(dev)
-    ghc-options:      -Wall -Werror
-  else
-    ghc-options:      -O2 -Wall
-  if flag(dev)
-    ghc-options:      -Wcompat
-                      -Wincomplete-record-updates
-                      -Wincomplete-uni-patterns
-                      -Wnoncanonical-monad-instances
-  default-language:   Haskell2010
+    exposed-modules:  Codec.Audio.LAME
+    c-sources:        cbits/helpers.c
+    other-modules:    Codec.Audio.LAME.Internal
+    default-language: Haskell2010
+    extra-libraries:  mp3lame
+    include-dirs:     cbits
+    build-depends:
+        base >=4.12 && <5.0,
+        bytestring >=0.2 && <0.11,
+        directory >=1.2.2 && <1.4,
+        exceptions >=0.6 && <0.11,
+        filepath >=1.2 && <1.5,
+        text >=0.2 && <1.3,
+        transformers >=0.4 && <0.6,
+        wave >=0.1.2 && <0.3
+
+    if flag(dev)
+        ghc-options: -Wall -Werror
+
+    else
+        ghc-options: -O2 -Wall
+
+    if flag(dev)
+        ghc-options:
+            -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns
+            -Wnoncanonical-monad-instances
 
 test-suite tests
-  main-is:            Spec.hs
-  hs-source-dirs:     tests
-  type:               exitcode-stdio-1.0
-  build-depends:      base             >= 4.12  && < 5.0
-                    , directory        >= 1.2.2 && < 1.4
-                    , filepath         >= 1.2   && < 1.5
-                    , hspec            >= 2.0   && < 3.0
-                    , htaglib          >= 1.0   && < 1.3
-                    , lame
-                    , temporary        >= 1.1   && < 1.4
-                    , text             >= 0.2   && < 1.3
-  build-tools:        hspec-discover   >= 2.0   && < 3.0
-  other-modules:      Codec.Audio.LAMESpec
-  if flag(dev)
-    ghc-options:      -Wall -Werror
-  else
-    ghc-options:      -O2 -Wall
-  default-language:   Haskell2010
+    type:             exitcode-stdio-1.0
+    main-is:          Spec.hs
+    build-tools:      hspec-discover >=2.0 && <3.0
+    hs-source-dirs:   tests
+    other-modules:    Codec.Audio.LAMESpec
+    default-language: Haskell2010
+    build-depends:
+        base >=4.12 && <5.0,
+        directory >=1.2.2 && <1.4,
+        filepath >=1.2 && <1.5,
+        hspec >=2.0 && <3.0,
+        htaglib >=1.0 && <1.3,
+        lame -any,
+        temporary >=1.1 && <1.4,
+        text >=0.2 && <1.3
+
+    if flag(dev)
+        ghc-options: -Wall -Werror
+
+    else
+        ghc-options: -O2 -Wall
