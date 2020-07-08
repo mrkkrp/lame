@@ -31,48 +31,47 @@ data Info = Info
 
 spec :: Spec
 spec =
-  describe "encodeMp3"
-    $ withVariousWaves
-    $ it "produces correct MP3 file"
-    $ \(ipath, opath) -> do
-      encodeMp3
-        defaultEncoderSettings
-          { encoderTagTitle = pure tagTitle,
-            encoderTagArtist = pure tagArtist,
-            encoderTagAlbum = pure tagAlbum,
-            encoderTagYear = pure tagYear,
-            encoderTagComment = pure tagComment,
-            encoderTagTrack = pure tagTrack,
-            encoderTagGenre = pure tagGenre
-          }
-        ipath
-        opath
-      Info {..} <-
-        getTags' opath MPEG $
-          Info
-            <$> titleGetter
-            <*> artistGetter
-            <*> albumGetter
-            <*> commentGetter
-            <*> genreGetter
-            <*> yearGetter
-            <*> trackNumberGetter
-            <*> durationGetter
-            <*> bitRateGetter
-            <*> sampleRateGetter
-            <*> channelsGetter
-      unTitle infoTitle `shouldBe` tagTitle
-      unArtist infoArtist `shouldBe` tagArtist
-      unAlbum infoAlbum `shouldBe` tagAlbum
-      fmap (T.pack . show . unYear) infoYear `shouldBe` pure tagYear
-      unComment infoComment `shouldBe` tagComment
-      fmap unTrackNumber infoTrackNumber
-        `shouldBe` (pure . fromIntegral . fst) tagTrack
-      unGenre infoGenre `shouldBe` tagGenre
-      unDuration infoDuration `shouldBe` 1
-      unBitRate infoBitRate `shouldBe` 128
-      unSampleRate infoSampleRate `shouldBe` 44100
-      unChannels infoChannels `shouldBe` 2
+  describe "encodeMp3" $
+    withVariousWaves $
+      it "produces correct MP3 file" $ \(ipath, opath) -> do
+        encodeMp3
+          defaultEncoderSettings
+            { encoderTagTitle = pure tagTitle,
+              encoderTagArtist = pure tagArtist,
+              encoderTagAlbum = pure tagAlbum,
+              encoderTagYear = pure tagYear,
+              encoderTagComment = pure tagComment,
+              encoderTagTrack = pure tagTrack,
+              encoderTagGenre = pure tagGenre
+            }
+          ipath
+          opath
+        Info {..} <-
+          getTags' opath MPEG $
+            Info
+              <$> titleGetter
+              <*> artistGetter
+              <*> albumGetter
+              <*> commentGetter
+              <*> genreGetter
+              <*> yearGetter
+              <*> trackNumberGetter
+              <*> durationGetter
+              <*> bitRateGetter
+              <*> sampleRateGetter
+              <*> channelsGetter
+        unTitle infoTitle `shouldBe` tagTitle
+        unArtist infoArtist `shouldBe` tagArtist
+        unAlbum infoAlbum `shouldBe` tagAlbum
+        fmap (T.pack . show . unYear) infoYear `shouldBe` pure tagYear
+        unComment infoComment `shouldBe` tagComment
+        fmap unTrackNumber infoTrackNumber
+          `shouldBe` (pure . fromIntegral . fst) tagTrack
+        unGenre infoGenre `shouldBe` tagGenre
+        unDuration infoDuration `shouldBe` 1
+        unBitRate infoBitRate `shouldBe` 128
+        unSampleRate infoSampleRate `shouldBe` 44100
+        unChannels infoChannels `shouldBe` 2
 
 ----------------------------------------------------------------------------
 -- Helpers

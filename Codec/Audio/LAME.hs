@@ -307,7 +307,7 @@ withTempFile' path = bracketOnError acquire cleanup
       hClose h
       return path'
     cleanup = ignoringIOErrors . removeFile -- in case exception strikes
-        -- before we create the actual file
+    -- before we create the actual file
     dir = takeDirectory path
     file = takeFileName path
 

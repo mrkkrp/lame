@@ -415,9 +415,8 @@ foreign import ccall unsafe "id3tag_v2_only"
 
 -- | Set a textual tag identifying it by its ID.
 id3TagSetTextInfo :: Lame -> String -> Text -> IO ()
-id3TagSetTextInfo l id' text = handleErrors
-  $ withCString id'
-  $ \idPtr ->
+id3TagSetTextInfo l id' text =
+  handleErrors . withCString id' $ \idPtr ->
     TF.useAsPtr text $ \textPtr len ->
       c_id3tag_set_textinfo_utf16 l idPtr textPtr (fromIntegral len)
 
@@ -426,9 +425,8 @@ foreign import ccall unsafe "id3tag_set_textinfo_utf16_"
 
 -- | Set the comment tag.
 id3TagSetComment :: Lame -> Text -> IO ()
-id3TagSetComment l text = handleErrors
-  $ TF.useAsPtr text
-  $ \textPtr len ->
+id3TagSetComment l text =
+  handleErrors . TF.useAsPtr text $ \textPtr len ->
     c_id3tag_set_comment_utf16 l textPtr (fromIntegral len)
 
 foreign import ccall unsafe "id3tag_set_comment_utf16_"
@@ -436,9 +434,8 @@ foreign import ccall unsafe "id3tag_set_comment_utf16_"
 
 -- | Set album art.
 id3TagSetAlbumArt :: Lame -> ByteString -> IO ()
-id3TagSetAlbumArt l img = handleErrors
-  $ B.unsafeUseAsCStringLen img
-  $ \(dataPtr, dataLen) ->
+id3TagSetAlbumArt l img =
+  handleErrors . B.unsafeUseAsCStringLen img $ \(dataPtr, dataLen) ->
     c_id3tag_set_albumart l dataPtr (fromIntegral dataLen)
 
 foreign import ccall unsafe "id3tag_set_albumart"
@@ -458,9 +455,8 @@ encodingHelper ::
   -- | Location of output file (normalized)
   FilePath ->
   IO ()
-encodingHelper l wave@Wave {..} ipath opath = handleErrors
-  $ withCString ipath
-  $ \ipathPtr ->
+encodingHelper l wave@Wave {..} ipath opath =
+  handleErrors . withCString ipath $ \ipathPtr ->
     withCString opath $ \opathPtr ->
       c_lame_encoding_helper
         l -- lame settings structure
