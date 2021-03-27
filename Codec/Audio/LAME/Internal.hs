@@ -88,7 +88,7 @@ import Foreign.C.Types (CSize (..))
 ----------------------------------------------------------------------------
 -- Types
 
--- | An opaque newtype wrapper around @'Ptr' 'Void'@, serves to represent
+-- | An opaque newtype wrapper around @'Ptr' 'Void'@ that represents the
 -- pointer to the structure that does all the bookkeeping in LAME.
 newtype Lame = Lame (Ptr Void)
 
@@ -102,7 +102,7 @@ data VbrMode
     VbrMtrh
   deriving (Show, Read, Eq, Ord, Bounded, Enum)
 
--- | Enumeration of problems you can have with LAME.
+-- | Enumeration of problems you may have with LAME.
 data LameException
   = -- | A “generic error” happened
     LameGenericError
@@ -129,15 +129,15 @@ instance Exception LameException
 -- | Create and use a 'Lame' (pointer structure needed for talking to the
 -- LAME API).
 --
--- If memory cannot be allocated, corresponding 'LameException' is raised.
+-- If memory cannot be allocated, 'LameNoMemory' is thrown.
 withLame :: (Lame -> IO a) -> IO a
 withLame f = bracket lameInit (mapM_ lameClose) $ \mlame ->
   case mlame of
     Nothing -> throwM LameNoMemory
     Just x -> f x
 
--- | Create a new 'Lame'. In the case of memory allocation problem 'Nothing'
--- is returned.
+-- | Create a new 'Lame'. In the case of a memory allocation problem
+-- 'Nothing' is returned.
 lameInit :: IO (Maybe Lame)
 lameInit = maybePtr <$> c_lame_init
 
@@ -152,7 +152,7 @@ foreign import ccall unsafe "lame_close"
   c_lame_close :: Lame -> IO ()
 
 -- | Set more internal configuration based on previously set parameters.
--- Should be called when all the other stuff is set.
+-- Should be called when everything else is set.
 initParams :: Lame -> IO ()
 initParams = handleErrors . c_lame_init_params
 
@@ -169,14 +169,14 @@ setNumSamples l x = handleErrors (c_lame_set_num_samples l x)
 foreign import ccall unsafe "lame_set_num_samples"
   c_lame_set_num_samples :: Lame -> Word64 -> IO Int
 
--- | Set sample rate of the input stream.
+-- | Set the sample rate of the input stream.
 setInputSampleRate :: Lame -> Int -> IO ()
 setInputSampleRate l x = handleErrors (c_lame_set_in_samplerate l x)
 
 foreign import ccall unsafe "lame_set_in_samplerate"
   c_lame_set_in_samplerate :: Lame -> Int -> IO Int
 
--- | Set number of channels in input stream.
+-- | Set the number of channels in the input stream.
 setNumChannels :: Lame -> Int -> IO ()
 setNumChannels l x = handleErrors (c_lame_set_num_channels l x)
 
@@ -190,7 +190,7 @@ setScale l x = handleErrors (c_lame_set_scale l x)
 foreign import ccall unsafe "lame_set_scale"
   c_lame_set_scale :: Lame -> Float -> IO Int
 
--- | Set output sample rate in Hz. 0 (default) means that LAME will pick
+-- | Set the output sample rate in Hz. 0 (default) means that LAME will pick
 -- this value automatically.
 setOutputSampleRate :: Lame -> Int -> IO ()
 setOutputSampleRate l x = handleErrors (c_lame_set_out_samplerate l x)
@@ -208,9 +208,9 @@ setWriteVbrTag l x = handleErrors (c_lame_set_bWriteVbrTag l (fromBool x))
 foreign import ccall unsafe "lame_set_bWriteVbrTag"
   c_lame_set_bWriteVbrTag :: Lame -> Int -> IO Int
 
--- | Select algorithm. This variable will effect quality by selecting
--- expensive or cheap algorithms. 0 gives the best quality (very slow). 9 is
--- very fast, but gives worst quality.
+-- | Select the algorithm. This variable will affect the quality by
+-- selecting expensive or cheap algorithms. 0 gives the best quality (very
+-- slow). 9 is very fast, but gives the worst quality.
 --
 --     * 2—near-best quality, not too slow.
 --     * 5—good quality, fast.
@@ -235,28 +235,28 @@ setFindReplayGain l x = handleErrors (c_lame_set_findReplayGain l (fromBool x))
 foreign import ccall unsafe "lame_set_findReplayGain"
   c_lame_set_findReplayGain :: Lame -> Int -> IO Int
 
--- | Set total number of tracks to encode in “no gap” mode.
+-- | Set the total number of tracks to encode in “no gap” mode.
 setNoGapTotal :: Lame -> Int -> IO ()
 setNoGapTotal l x = handleErrors (c_lame_set_nogap_total l x)
 
 foreign import ccall unsafe "lame_set_nogap_total"
   c_lame_set_nogap_total :: Lame -> Int -> IO Int
 
--- | Set index of current track to encode in “no gap” mode.
+-- | Set the index of the current track to encode in “no gap” mode.
 setNoGapCurrentIndex :: Lame -> Int -> IO ()
 setNoGapCurrentIndex l x = handleErrors (c_lame_set_nogap_currentindex l x)
 
 foreign import ccall unsafe "lame_set_nogap_currentindex"
   c_lame_set_nogap_currentindex :: Lame -> Int -> IO Int
 
--- | Set bitrate.
+-- | Set the bitrate.
 setBitrate :: Lame -> Int -> IO ()
 setBitrate l x = handleErrors (c_lame_set_brate l x)
 
 foreign import ccall unsafe "lame_set_brate"
   c_lame_set_brate :: Lame -> Int -> IO Int
 
--- | Set compression ratio.
+-- | Set the compression ratio.
 setCompressionRatio :: Lame -> Float -> IO ()
 setCompressionRatio l x = handleErrors (c_lame_set_compression_ratio l x)
 
@@ -317,21 +317,21 @@ setVBRQ l x = handleErrors (c_lame_set_VBR_q l x)
 foreign import ccall unsafe "lame_set_VBR_q"
   c_lame_set_VBR_q :: Lame -> Int -> IO Int
 
--- | Only for VBR ABR: set min bitrate in kbps.
+-- | Only for VBR ABR: set the min bitrate in kbps.
 setVBRMinBitrate :: Lame -> Int -> IO ()
 setVBRMinBitrate l x = handleErrors (c_lame_set_VBR_min_bitrate_kbps l x)
 
 foreign import ccall unsafe "lame_set_VBR_min_bitrate_kbps"
   c_lame_set_VBR_min_bitrate_kbps :: Lame -> Int -> IO Int
 
--- | Only for VBR ABR: set mean bitrate in kbps.
+-- | Only for VBR ABR: set the mean bitrate in kbps.
 setVBRMeanBitrate :: Lame -> Int -> IO ()
 setVBRMeanBitrate l x = handleErrors (c_lame_set_VBR_mean_bitrate_kbps l x)
 
 foreign import ccall unsafe "lame_set_VBR_mean_bitrate_kbps"
   c_lame_set_VBR_mean_bitrate_kbps :: Lame -> Int -> IO Int
 
--- | Only for VBR ABR: set max bitrate in kbps.
+-- | Only for VBR ABR: set the max bitrate in kbps.
 setVBRMaxBitrate :: Lame -> Int -> IO ()
 setVBRMaxBitrate l x = handleErrors (c_lame_set_VBR_max_bitrate_kbps l x)
 
@@ -349,8 +349,8 @@ foreign import ccall unsafe "lame_set_VBR_hard_min"
 ----------------------------------------------------------------------------
 -- Filtering control
 
--- | Set frequency to put low-pass filter on. Default is 0 (LAME chooses),
--- -1 will disable the filter altogether.
+-- | Set the frequency to put the low-pass filter on. Default is 0 (LAME
+-- chooses), -1 will disable the filter altogether.
 setLowpassFreq :: Lame -> Int -> IO ()
 setLowpassFreq l x = handleErrors (c_lame_set_lowpassfreq l x)
 
@@ -365,8 +365,8 @@ setLowpassWidth l x = handleErrors (c_lame_set_lowpasswidth l x)
 foreign import ccall unsafe "lame_set_lowpasswidth"
   c_lame_set_lowpasswidth :: Lame -> Int -> IO Int
 
--- | Set frequency to put high-pass filter on. Default is 0 (LAME chooses),
--- -1 will disable the filter altogether.
+-- | Set the frequency to put the high-pass filter on. Default is 0 (LAME
+-- chooses), -1 will disable the filter altogether.
 setHighpassFreq :: Lame -> Int -> IO ()
 setHighpassFreq l x = handleErrors (c_lame_set_highpassfreq l x)
 
@@ -384,15 +384,15 @@ foreign import ccall unsafe "lame_set_highpasswidth"
 ----------------------------------------------------------------------------
 -- Tags
 
--- | Initialize something about tag editing library. The docs are silent
--- what this does, but I guess we'll take it into the business.
+-- | Initialize something about the tag editing library. The docs are silent
+-- what this does.
 id3TagInit :: Lame -> IO ()
 id3TagInit = c_id3tag_init
 
 foreign import ccall unsafe "id3tag_init"
   c_id3tag_init :: Lame -> IO ()
 
--- | Force addition of version 2 tag.
+-- | Force addition of a version 2 tag.
 id3TagAddV2 :: Lame -> IO ()
 id3TagAddV2 = c_id3tag_add_v2
 
@@ -432,7 +432,7 @@ id3TagSetComment l text =
 foreign import ccall unsafe "id3tag_set_comment_utf16_"
   c_id3tag_set_comment_utf16 :: Lame -> Ptr Word16 -> Int -> IO Int
 
--- | Set album art.
+-- | Set the album art.
 id3TagSetAlbumArt :: Lame -> ByteString -> IO ()
 id3TagSetAlbumArt l img =
   handleErrors . B.unsafeUseAsCStringLen img $ \(dataPtr, dataLen) ->
@@ -444,7 +444,7 @@ foreign import ccall unsafe "id3tag_set_albumart"
 ----------------------------------------------------------------------------
 -- Encoding
 
--- | Encode given input file.
+-- | Encode a given input file.
 encodingHelper ::
   -- | The settings
   Lame ->
@@ -460,8 +460,8 @@ encodingHelper l wave@Wave {..} ipath opath =
     withCString opath $ \opathPtr ->
       c_lame_encoding_helper
         l -- lame settings structure
-        (fromIntegral waveDataOffset) -- offset of data chunk
-        waveDataSize -- size of data chunk
+        (fromIntegral waveDataOffset) -- offset of the data chunk
+        waveDataSize -- the size of the data chunk
         ( case waveSampleFormat of
             SampleFormatPcmInt _ -> 0
             SampleFormatIeeeFloat32Bit -> 1
@@ -486,14 +486,14 @@ foreign import ccall unsafe "lame_encoding_helper"
 -- Helpers
 
 -- | Coerce to 'Ptr' and check if it's a null pointer, return 'Nothing' if
--- it is, otherwise return the given pointer unchanged. Needless to say that
--- this thing is unsafe.
+-- it is, otherwise return the given pointer unchanged. Needless to say,
+-- this is unsafe.
 maybePtr :: Coercible a (Ptr p) => a -> Maybe a
 maybePtr a
   | coerce a == nullPtr = Nothing
   | otherwise = Just a
 
--- | Treat the 'Int' value as a error code. Unless it's 0, throw
+-- | Treat an 'Int' value as an error code. Unless it's 0, throw a
 -- corresponding 'LameException', otherwise just return the unit.
 handleErrors :: IO Int -> IO ()
 handleErrors m = do

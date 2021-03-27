@@ -6,29 +6,24 @@
 [![Stackage LTS](http://stackage.org/package/lame/badge/lts)](http://stackage.org/lts/package/lame)
 ![CI](https://github.com/mrkkrp/lame/workflows/CI/badge.svg?branch=master)
 
-This is a fairly complete high-level Haskell binding to
-[LAME](http://lame.sourceforge.net/).
+This is a high-level Haskell binding to the
+[LAME](http://lame.sourceforge.net/) encoder.
 
 ## Provided functionality
 
-* Fast MP3 encoder working in various modes (you specify compression ratio,
-  desired bit-rate, or parameters for VBR), with quite a few interesting
-  options to tweak.
+* Fast MP3 encoder working in different modes.
 * Setting of all common tags, including pictures.
 
 ## Limitations
 
-* No decoding for now. It's actually done via a separate library in LAME.
+* No decoding. It is done with a separate library in LAME.
 * Relatively limited (compared
   to [ID3 specs](http://id3.org/id3v2.3.0#Text_information_frames)) number
   of tag fields available for setting.
 * Some sample widths are not supported: less than or equal to 8 bit and
-  greater than 16 bits (for integer samples, floats work OK).
+  greater than 16 bits (for integer samples, floats work fine).
 * Some psycho-acoustic and noise-shaping settings are not available for
   tweaking.
-
-Open an issue if something of this is a deal breaker for you, some of these
-limitations are easily lifted.
 
 ## Contribution
 

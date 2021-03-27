@@ -8,8 +8,8 @@ author:             Mark Karpov <markkarpov92@gmail.com>
 tested-with:        ghc ==8.8.4 ghc ==8.10.4 ghc ==9.0.1
 homepage:           https://github.com/mrkkrp/lame
 bug-reports:        https://github.com/mrkkrp/lame/issues
-synopsis:           Fairly complete high-level binding to LAME encoder
-description:        Fairly complete high-level binding to LAME encoder.
+synopsis:           A high-level binding to the LAME encoder
+description:        A high-level binding to the LAME encoder.
 category:           Codec, Audio
 build-type:         Simple
 data-files:         audio-samples/*.wav

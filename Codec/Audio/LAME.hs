@@ -10,8 +10,7 @@
 -- Stability   :  experimental
 -- Portability :  portable
 --
--- The module provides an interface to LAME MP3 encoder. All you need to do
--- to encode a WAVE (or RF64) file is to call 'encodeMp3', which see.
+-- The module provides an interface to the LAME encoder.
 module Codec.Audio.LAME
   ( encodeMp3,
     EncoderSettings (..),
@@ -46,9 +45,9 @@ data EncoderSettings = EncoderSettings
   { -- | How to determine amount of compression to apply, see 'Compression'.
     -- Default value: @'CompressionRatio' 11@ (corresponds to 128 kbps).
     encoderCompression :: !Compression,
-    -- | Select algorithm. This variable will effect quality by selecting
-    -- expensive or cheap algorithms. 0 gives the best quality (very slow). 9 is
-    -- very fast, but gives worst quality.
+    -- | Select the algorithm. This variable will affect the quality by
+    -- selecting expensive or cheap algorithms. 0 gives the best quality
+    -- (very slow). 9 is very fast, but gives the worst quality.
     --
     --     * 2—near-best quality, not too slow.
     --     * 5—good quality, fast.
@@ -61,13 +60,14 @@ data EncoderSettings = EncoderSettings
     -- current index and the second value specifies total number of tracks.
     -- Default value: 'Nothing'—disabled.
     encoderNoGap :: !(Maybe (Word32, Word32)),
-    -- | Whether to enable error protection. Error protection means that 2
-    -- bytes from each frame for CRC checksum. Default value: 'False'.
+    -- | Whether to enable the error protection. Error protection means that
+    -- 2 bytes from each frame are used for CRC checksum. Default value:
+    -- 'False'.
     encoderErrorProtection :: !Bool,
     -- | Whether to enforce strict ISO compliance. Default value: 'False'.
     encoderStrictISO :: !Bool,
-    -- | Sample rate of output file. Default value: 'Nothing', which means
-    -- use sample rate of input file.
+    -- | Sample rate of the output file. Default value: 'Nothing', which
+    -- means that the sample rate of the input file will be used.
     encoderSampleRate :: !(Maybe Word32),
     -- | Scale input stream by multiplying samples by this value. Default
     -- value: 1 (no scaling).
@@ -93,22 +93,23 @@ data EncoderSettings = EncoderSettings
     encoderTagYear :: !(Maybe Text),
     -- | Comment tag to write. Default value: 'Nothing'.
     encoderTagComment :: !(Maybe Text),
-    -- | Track number (first in tuple) and (optionally) total number of
-    -- tracks (second in tuple). Default value: 'Nothing'.
+    -- | Track number (the first component of the tuple) and (optionally)
+    -- the total number of tracks (the second component of the tuple).
+    -- Default value: 'Nothing'.
     encoderTagTrack :: !(Maybe (Word8, Maybe Word8)),
     -- | Genre tag to write. Default value: 'Nothing'.
     encoderTagGenre :: !(Maybe Text),
     -- | Album art (a picture) to write (JPEG\/PNG\/GIF). Default value:
     -- 'Nothing'.
     encoderAlbumArt :: !(Maybe ByteString),
-    -- | Settings for low-pass filter. Default value: 'FilterAuto'.
+    -- | Settings for the low-pass filter. Default value: 'FilterAuto'.
     encoderLowpassFilter :: !FilterSetup,
-    -- | Settings for high-pass filter. Default value: 'FilterAuto'.
+    -- | Settings for the high-pass filter. Default value: 'FilterAuto'.
     encoderHighpassFilter :: !FilterSetup
   }
   deriving (Show, Read, Eq, Ord)
 
--- | Default value of 'EncoderSettings'.
+-- | The default value of 'EncoderSettings'.
 --
 -- @since 0.2.0
 defaultEncoderSettings :: EncoderSettings
@@ -138,20 +139,20 @@ defaultEncoderSettings =
       encoderHighpassFilter = FilterAuto
     }
 
--- | The data type represents supported options for compression. You can
--- specify either fixed bitrate, compression ratio, or use the VBR mode.
+-- | The supported options for compression. You can specify either fixed
+-- bitrate, compression ratio, or use the VBR mode.
 data Compression
-  = -- | Specify compression by setting a fixed bitrate, e.g.
+  = -- | Specify the compression by setting a fixed bitrate, e.g.
     -- @'CompressionBitrate' 320@.
     CompressionBitrate Word
-  | -- | Specify compression ratio.
+  | -- | Specify the compression ratio.
     CompressionRatio Float
   | -- | VBR. Here you can specify which mode to use and the second argument
-    -- is VBR quality from 0 (highest), to 9 (lowest). Good default is 4.
+    -- is VBR quality from 0 (highest), to 9 (lowest). A good default is 4.
     CompressionVBR VbrMode Word
   deriving (Show, Read, Eq, Ord)
 
--- | Variable bitrate (VBR) modes with their associated parameters.
+-- | Variable bitrate (VBR) modes and their parameters.
 data VbrMode
   = -- | VBR RH.
     VbrRh
@@ -190,22 +191,22 @@ data FilterSetup
     FilterManual Word (Maybe Word)
   deriving (Show, Read, Eq, Ord)
 
--- | Encode a WAVE file or RF64 file to MP3.
+-- | Encode a WAVE file or RF64 file.
 --
 -- If the input file is not a valid WAVE file, 'WaveException' will be
--- thrown. 'I.LameException' is thrown when underlying LAME encoder reports
--- a problem.
+-- thrown. 'I.LameException' is thrown when the LAME encoder reports a
+-- problem.
 --
--- Not all sample formats and bit depth are currently supported. Supported
--- sample formats include:
+-- Not all sample formats and bit depths are currently supported. The
+-- supported sample formats include:
 --
 --     * PCM with samples represented as signed integers > 8 bit and <= 16
 --       bit per mono-sample.
 --     * IEEE floating point (32 bit) samples.
 --     * IEEE floating point (64 bit) samples.
 --
--- If you feed the encoder with something else, expect
--- 'I.LameUnsupportedSampleFormat' to be thrown.
+-- If you feed the encoder something else, 'I.LameUnsupportedSampleFormat'
+-- will be thrown.
 encodeMp3 ::
   MonadIO m =>
   -- | Encoder settings
@@ -279,7 +280,7 @@ encodeMp3 EncoderSettings {..} ipath' opath' = liftIO . I.withLame $ \l -> do
 ----------------------------------------------------------------------------
 -- Helpers
 
--- | Setup a filter for given 'I.Lame'.
+-- | Setup a filter for a given 'I.Lame'.
 setupFilter ::
   -- | How to set cut-off frequncy
   (I.Lame -> Int -> IO ()) ->
@@ -311,15 +312,15 @@ withTempFile' path = bracketOnError acquire cleanup
     dir = takeDirectory path
     file = takeFileName path
 
--- | Perform specified action ignoring IO exceptions it may throw.
+-- | Perform an action ignoring IO exceptions it may throw.
 ignoringIOErrors :: IO () -> IO ()
 ignoringIOErrors ioe = ioe `catch` handler
   where
     handler :: IOError -> IO ()
     handler = const (return ())
 
--- | Render track number and optionally total number of tracks as a strict
--- 'Text' value.
+-- | Render the track number and optionally the total number of tracks as a
+-- strict 'Text' value.
 renderTrackNumber :: Word8 -> Maybe Word8 -> IO Text
 renderTrackNumber 0 t = throwM (I.LameInvalidTrackNumber 0 t)
 renderTrackNumber n t@(Just 0) = throwM (I.LameInvalidTrackNumber n t)
