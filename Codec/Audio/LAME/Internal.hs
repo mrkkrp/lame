@@ -76,10 +76,11 @@ where
 import Codec.Audio.Wave
 import Control.Monad.Catch
 import Data.ByteString (ByteString)
+import qualified Data.ByteString as B
 import qualified Data.ByteString.Unsafe as B
 import Data.Coerce
 import Data.Text (Text)
-import qualified Data.Text.Foreign as TF
+import qualified Data.Text.Encoding as TE
 import Data.Void
 import Foreign hiding (void)
 import Foreign.C.String
@@ -417,19 +418,23 @@ foreign import ccall unsafe "id3tag_v2_only"
 id3TagSetTextInfo :: Lame -> String -> Text -> IO ()
 id3TagSetTextInfo l id' text =
   handleErrors . withCString id' $ \idPtr ->
-    TF.useAsPtr text $ \textPtr len ->
-      c_id3tag_set_textinfo_utf16 l idPtr textPtr (fromIntegral len)
+    let utf16encodedBs = TE.encodeUtf16LE text
+        len = fromIntegral (B.length utf16encodedBs `div` 2)
+     in B.unsafeUseAsCString utf16encodedBs $ \textPtr ->
+          c_id3tag_set_textinfo_utf16 l idPtr (castPtr textPtr) len
 
-foreign import ccall unsafe "id3tag_set_textinfo_utf16_"
+foreign import ccall unsafe "id3tag_set_textinfo_utf16_wrapped"
   c_id3tag_set_textinfo_utf16 :: Lame -> CString -> Ptr Word16 -> Int -> IO Int
 
 -- | Set the comment tag.
 id3TagSetComment :: Lame -> Text -> IO ()
 id3TagSetComment l text =
-  handleErrors . TF.useAsPtr text $ \textPtr len ->
-    c_id3tag_set_comment_utf16 l textPtr (fromIntegral len)
+  let utf16encodedBs = TE.encodeUtf16LE text
+      len = fromIntegral (B.length utf16encodedBs `div` 2)
+   in handleErrors . B.unsafeUseAsCString utf16encodedBs $ \textPtr ->
+        c_id3tag_set_comment_utf16 l (castPtr textPtr) len
 
-foreign import ccall unsafe "id3tag_set_comment_utf16_"
+foreign import ccall unsafe "id3tag_set_comment_utf16_wrapped"
   c_id3tag_set_comment_utf16 :: Lame -> Ptr Word16 -> Int -> IO Int
 
 -- | Set the album art.
