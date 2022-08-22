@@ -1,6 +1,6 @@
 #include "helpers.h"
 
-int id3tag_set_textinfo_utf16_
+int id3tag_set_textinfo_utf16_wrapped
   ( lame_global_flags *gfp
   , const char *id
   , const uint16_t *raw_text
@@ -17,7 +17,7 @@ int id3tag_set_textinfo_utf16_
   return id3tag_set_textinfo_utf16(gfp, id, text);
 }
 
-int id3tag_set_comment_utf16_
+int id3tag_set_comment_utf16_wrapped
   ( lame_global_flags *gfp
   , const uint16_t *raw_text
   , int len )
