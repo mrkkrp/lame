@@ -1,4 +1,4 @@
-## Unreleased
+## LAME 0.2.1
 
 * Works with `text-2.0` and older.
 * Dropped support for GHC 8.x.
