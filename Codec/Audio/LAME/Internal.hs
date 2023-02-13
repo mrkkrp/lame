@@ -493,7 +493,7 @@ foreign import ccall unsafe "lame_encoding_helper"
 -- | Coerce to 'Ptr' and check if it's a null pointer, return 'Nothing' if
 -- it is, otherwise return the given pointer unchanged. Needless to say,
 -- this is unsafe.
-maybePtr :: Coercible a (Ptr p) => a -> Maybe a
+maybePtr :: (Coercible a (Ptr p)) => a -> Maybe a
 maybePtr a
   | coerce a == nullPtr = Nothing
   | otherwise = Just a

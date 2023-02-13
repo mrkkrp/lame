@@ -208,7 +208,7 @@ data FilterSetup
 -- If you feed the encoder something else, 'I.LameUnsupportedSampleFormat'
 -- will be thrown.
 encodeMp3 ::
-  MonadIO m =>
+  (MonadIO m) =>
   -- | Encoder settings
   EncoderSettings ->
   -- | WAVE file to encode
