@@ -6,7 +6,7 @@ module Codec.Audio.LAMESpec (spec) where
 import Codec.Audio.LAME
 import Control.Monad
 import Data.Text (Text)
-import qualified Data.Text as T
+import Data.Text qualified as T
 import Data.Word (Word8)
 import Sound.HTagLib
 import System.Directory

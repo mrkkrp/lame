@@ -31,7 +31,7 @@ library
     exposed-modules:  Codec.Audio.LAME
     c-sources:        cbits/helpers.c
     other-modules:    Codec.Audio.LAME.Internal
-    default-language: Haskell2010
+    default-language: GHC2021
     extra-libraries:  mp3lame
     include-dirs:     cbits
     build-depends:
@@ -61,7 +61,7 @@ test-suite tests
     build-tool-depends: hspec-discover:hspec-discover >=2.0 && <3.0
     hs-source-dirs:     tests
     other-modules:      Codec.Audio.LAMESpec
-    default-language:   Haskell2010
+    default-language:   GHC2021
     build-depends:
         base >=4.15 && <5.0,
         directory >=1.2.2 && <1.4,

@@ -23,7 +23,7 @@ module Codec.Audio.LAME
   )
 where
 
-import qualified Codec.Audio.LAME.Internal as I
+import Codec.Audio.LAME.Internal qualified as I
 import Codec.Audio.Wave
 import Control.Monad
 import Control.Monad.Catch
@@ -31,7 +31,7 @@ import Control.Monad.IO.Class
 import Data.ByteString (ByteString)
 import Data.Maybe (fromMaybe)
 import Data.Text (Text)
-import qualified Data.Text as T
+import Data.Text qualified as T
 import Data.Word
 import System.Directory
 import System.FilePath
