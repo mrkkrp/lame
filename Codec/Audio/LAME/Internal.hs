@@ -76,11 +76,11 @@ where
 import Codec.Audio.Wave
 import Control.Monad.Catch
 import Data.ByteString (ByteString)
-import qualified Data.ByteString as B
-import qualified Data.ByteString.Unsafe as B
+import Data.ByteString qualified as B
+import Data.ByteString.Unsafe qualified as B
 import Data.Coerce
 import Data.Text (Text)
-import qualified Data.Text.Encoding as TE
+import Data.Text.Encoding qualified as TE
 import Data.Void
 import Foreign hiding (void)
 import Foreign.C.String
