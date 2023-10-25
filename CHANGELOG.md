@@ -1,3 +1,7 @@
+## LAME 0.2.2
+
+* Maintenance release with more modern and minimal dependencies.
+
 ## LAME 0.2.1
 
 * Works with `text-2.0` and older.
