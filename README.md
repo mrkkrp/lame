@@ -4,7 +4,7 @@
 [![Hackage](https://img.shields.io/hackage/v/lame.svg?style=flat)](https://hackage.haskell.org/package/lame)
 [![Stackage Nightly](http://stackage.org/package/lame/badge/nightly)](http://stackage.org/nightly/package/lame)
 [![Stackage LTS](http://stackage.org/package/lame/badge/lts)](http://stackage.org/lts/package/lame)
-![CI](https://github.com/mrkkrp/lame/workflows/CI/badge.svg?branch=master)
+[![CI](https://github.com/mrkkrp/lame/actions/workflows/ci.yaml/badge.svg)](https://github.com/mrkkrp/lame/actions/workflows/ci.yaml)
 
 This is a high-level Haskell binding to the
 [LAME](http://lame.sourceforge.net/) encoder.
