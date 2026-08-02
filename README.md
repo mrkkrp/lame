@@ -20,7 +20,7 @@ This is a high-level Haskell binding to the
 * Relatively limited (compared
   to [ID3 specs](http://id3.org/id3v2.3.0#Text_information_frames)) number
   of tag fields available for setting.
-* Some sample widths are not supported: less than or equal to 8 bit and
+* Some sample widths are not supported: less than or equal to 8 bits and
   greater than 16 bits (for integer samples, floats work fine).
 * Some psycho-acoustic and noise-shaping settings are not available for
   tweaking.
@@ -36,4 +36,4 @@ Pull requests are also welcome.
 
 Copyright © 2017–present Mark Karpov
 
-Distributed under BSD 3 clause license.
+Distributed under the BSD 3-clause license.

@@ -186,8 +186,8 @@ data FilterSetup
   | -- | Filter is disabled
     FilterDisabled
   | -- | The first parameter is the filter's frequency (cut-off frequency)
-    -- in Hz and the second parameter is width of transition band in Hz (if
-    -- 'Nothing', it's chosen automatically).
+    -- in Hz and the second parameter is the width of the transition band in
+    -- Hz (if 'Nothing', it's chosen automatically).
     FilterManual Word (Maybe Word)
   deriving (Show, Read, Eq, Ord)
 
@@ -282,9 +282,9 @@ encodeMp3 EncoderSettings {..} ipath' opath' = liftIO . I.withLame $ \l -> do
 
 -- | Setup a filter for a given 'I.Lame'.
 setupFilter ::
-  -- | How to set cut-off frequncy
+  -- | How to set the cut-off frequency
   (I.Lame -> Int -> IO ()) ->
-  -- | How to set width of transition band
+  -- | How to set the width of the transition band
   (I.Lame -> Int -> IO ()) ->
   -- | Settings to edit
   I.Lame ->
@@ -298,8 +298,8 @@ setupFilter setFreq setWidth l (FilterManual freq mwidth) = do
   forM_ mwidth (setWidth l . fromIntegral)
 
 -- | A custom wrapper for creating temporary files in the same directory as
--- given file. 'Handle' is not opened, you only get 'FilePath' in the
--- callback.
+-- the given file. The 'Handle' is not opened; you only get a 'FilePath' in
+-- the callback.
 withTempFile' :: FilePath -> (FilePath -> IO a) -> IO a
 withTempFile' path = bracketOnError acquire cleanup
   where
