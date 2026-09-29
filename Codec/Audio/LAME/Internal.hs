@@ -460,7 +460,7 @@ encodingHelper ::
   -- | Location of output file (normalized)
   FilePath ->
   IO ()
-encodingHelper l wave@Wave {..} ipath opath =
+encodingHelper l wave@Wave{..} ipath opath =
   handleErrors . withCString ipath $ \ipathPtr ->
     withCString opath $ \opathPtr ->
       c_lame_encoding_helper

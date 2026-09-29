@@ -216,10 +216,10 @@ encodeMp3 ::
   -- | Where to save the resulting MP3 file
   FilePath ->
   m ()
-encodeMp3 EncoderSettings {..} ipath' opath' = liftIO . I.withLame $ \l -> do
+encodeMp3 EncoderSettings{..} ipath' opath' = liftIO . I.withLame $ \l -> do
   ipath <- makeAbsolute ipath'
   opath <- makeAbsolute opath'
-  wave@Wave {..} <- readWaveFile ipath
+  wave@Wave{..} <- readWaveFile ipath
   case waveSampleFormat of
     SampleFormatPcmInt bps ->
       when (bps > 16 || bps <= 8) $

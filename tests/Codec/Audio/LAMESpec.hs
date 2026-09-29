@@ -46,7 +46,7 @@ spec =
             }
           ipath
           opath
-        Info {..} <-
+        Info{..} <-
           getTags' opath MPEG $
             Info
               <$> titleGetter
